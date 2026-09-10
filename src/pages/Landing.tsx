@@ -1,5 +1,5 @@
 import { Icon, Logo, PrimaryBtn, SecondaryBtn } from "../lib";
-import type { AuthState, Role } from "../lib";
+import type { AuthState, Role, IconName } from "../lib";
 
 const features = [
   { icon: "sparkles" as const, title: "AI-Personalised Learning", desc: "Adaptive content that adjusts to your mastery level in real time." },
@@ -10,27 +10,27 @@ const features = [
   { icon: "users" as const, title: "Peer Learning", desc: "Collaborative challenges, study groups, and peer matching." },
 ];
 
-const roles = [
+const roles: { role: Role; label: string; icon: IconName; desc: string; color: string; demo: string }[] = [
   {
-    role: "student" as Role,
+    role: "student",
     label: "Student",
-    emoji: "🎓",
+    icon: "graduationCap",
     desc: "Learn smarter with AI that adapts to you",
     color: "from-indigo-500 to-violet-600",
     demo: "Aarav Sharma · Level 7 · 2,480 XP",
   },
   {
-    role: "teacher" as Role,
+    role: "teacher",
     label: "Teacher",
-    emoji: "👩‍🏫",
+    icon: "user",
     desc: "Empower your class with AI-driven insights",
     color: "from-emerald-500 to-teal-600",
     demo: "Prof. Meera Krishnan · CSE-B DBMS",
   },
   {
-    role: "admin" as Role,
+    role: "admin",
     label: "Institution Admin",
-    emoji: "🏛️",
+    icon: "building",
     desc: "Manage cohorts, analytics, and outcomes",
     color: "from-sky-500 to-blue-600",
     demo: "Admin · Sri Venkateswara College of Engg.",
@@ -145,8 +145,8 @@ export default function Landing({
             {roles.map(r => (
               <button key={r.role} onClick={() => onDemoLogin(r.role)}
                 className="text-left rounded-[18px] overflow-hidden border border-slate-200 hover:shadow-lg hover:-translate-y-1 transition-all group">
-                <div className={`h-28 bg-gradient-to-br ${r.color} flex items-end p-5`}>
-                  <span className="text-4xl">{r.emoji}</span>
+                <div className={`h-28 bg-gradient-to-br ${r.color} flex items-center justify-center p-5`}>
+                  <Icon name={r.icon} stroke="white" size={44} />
                 </div>
                 <div className="p-5 bg-white">
                   <div className="text-base font-bold text-slate-900 group-hover:text-indigo-700 transition-colors">{r.label}</div>

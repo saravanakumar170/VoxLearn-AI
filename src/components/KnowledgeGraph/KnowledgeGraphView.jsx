@@ -22,9 +22,9 @@ export default function KnowledgeGraphView({ onStartRemedial, onOpenVoice }) {
   const filteredNodes = selectedDomain === 'All' ? nodes : nodes.filter(n => n.domain === selectedDomain);
 
   const getStatusBadge = (status) => {
-    if (status === 'Mastered') return <span className="badge badge-mastered">🟢 Mastered</span>;
-    if (status === 'Medium') return <span className="badge badge-warning">🟡 In Progress</span>;
-    return <span className="badge badge-weak">🔴 Critical Weakness</span>;
+    if (status === 'Mastered') return <span className="badge badge-mastered"><CheckCircle size={12} className="inline mr-1" /> Mastered</span>;
+    if (status === 'Medium') return <span className="badge badge-warning"><AlertTriangle size={12} className="inline mr-1" /> In Progress</span>;
+    return <span className="badge badge-weak"><ShieldAlert size={12} className="inline mr-1" /> Critical Weakness</span>;
   };
 
   return (
@@ -71,9 +71,9 @@ export default function KnowledgeGraphView({ onStartRemedial, onOpenVoice }) {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
             <h4 style={{ fontSize: '0.95rem' }}>Concept Mastery Network</h4>
             <div style={{ display: 'flex', gap: '0.75rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-              <span>🟢 &gt;=80%</span>
-              <span>🟡 60-79%</span>
-              <span>🔴 &lt;60% (Weak)</span>
+              <span>High (&gt;=80%)</span>
+              <span>Medium (60-79%)</span>
+              <span>Weak (&lt;60%)</span>
             </div>
           </div>
 

@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Icon, Logo, PrimaryBtn, SecondaryBtn } from "../lib";
-import type { AuthState, Role } from "../lib";
+import type { AuthState, Role, IconName } from "../lib";
 
 // ─── Login ────────────────────────────────────────────────────────────────────
-const DEMO_ACCOUNTS: { role: Role; name: string; email: string; emoji: string; color: string }[] = [
-  { role: "student", name: "Aarav Sharma", email: "aarav@learnosdemo.ai", emoji: "🎓", color: "bg-indigo-50 border-indigo-200 text-indigo-700" },
-  { role: "teacher", name: "Prof. Meera Krishnan", email: "meera@learnosdemo.ai", emoji: "👩‍🏫", color: "bg-emerald-50 border-emerald-200 text-emerald-700" },
-  { role: "admin", name: "Institution Admin", email: "admin@learnosdemo.ai", emoji: "🏛️", color: "bg-sky-50 border-sky-200 text-sky-700" },
+const DEMO_ACCOUNTS: { role: Role; name: string; email: string; icon: IconName; color: string }[] = [
+  { role: "student", name: "Aarav Sharma", email: "aarav@learnosdemo.ai", icon: "graduationCap", color: "bg-indigo-50 border-indigo-200 text-indigo-700" },
+  { role: "teacher", name: "Prof. Meera Krishnan", email: "meera@learnosdemo.ai", icon: "user", color: "bg-emerald-50 border-emerald-200 text-emerald-700" },
+  { role: "admin", name: "Institution Admin", email: "admin@learnosdemo.ai", icon: "building", color: "bg-sky-50 border-sky-200 text-sky-700" },
 ];
 
 export function Login({
@@ -59,7 +59,7 @@ export function Login({
               {DEMO_ACCOUNTS.map(d => (
                 <button key={d.role} onClick={() => onDemoLogin(d.role)}
                   className={`w-full flex items-center gap-3 p-3 rounded-[10px] border transition-all hover:shadow-sm text-left ${d.color}`}>
-                  <span className="text-xl">{d.emoji}</span>
+                  <Icon name={d.icon} stroke="currentColor" size={20} />
                   <div className="flex-1 min-w-0">
                     <div className="text-xs font-semibold capitalize">{d.role} Demo</div>
                     <div className="text-xs opacity-70 truncate">{d.name}</div>
@@ -131,10 +131,10 @@ export function Register({
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
 
-  const roleOptions: { role: Role; label: string; emoji: string; desc: string }[] = [
-    { role: "student", label: "Student", emoji: "🎓", desc: "Learn with AI" },
-    { role: "teacher", label: "Teacher", emoji: "👩‍🏫", desc: "Manage your class" },
-    { role: "admin", label: "Admin", emoji: "🏛️", desc: "Org-level insights" },
+  const roleOptions: { role: Role; label: string; icon: IconName; desc: string }[] = [
+    { role: "student", label: "Student", icon: "graduationCap", desc: "Learn with AI" },
+    { role: "teacher", label: "Teacher", icon: "user", desc: "Manage your class" },
+    { role: "admin", label: "Admin", icon: "building", desc: "Org-level insights" },
   ];
 
   return (
@@ -152,7 +152,7 @@ export function Register({
               <button key={r.role} onClick={() => setRole(r.role)}
                 className={`flex flex-col items-center gap-1.5 p-3 rounded-[12px] border-2 transition-all ${role === r.role ? "border-indigo-400" : "border-slate-200 hover:border-slate-300"}`}
                 style={role === r.role ? { background: "#EEF0FF" } : { background: "white" }}>
-                <span className="text-2xl">{r.emoji}</span>
+                <Icon name={r.icon} stroke={role === r.role ? "#4F46E5" : "#64748B"} size={24} />
                 <span className={`text-xs font-semibold ${role === r.role ? "text-indigo-700" : "text-slate-700"}`}>{r.label}</span>
                 <span className="text-[10px] text-slate-400">{r.desc}</span>
               </button>

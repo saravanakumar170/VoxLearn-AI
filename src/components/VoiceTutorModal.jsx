@@ -255,11 +255,11 @@ export default function VoiceTutorModal({ isOpen, onClose, initialConcept = '' }
             ))}
           </div>
 
-          <div style={{ fontSize: '0.75rem', fontWeight: 600, color: isListening ? 'var(--accent-rose)' : isSpeaking ? 'var(--accent-cyan)' : 'var(--text-muted)' }}>
-            {isListening ? '🎙️ Listening to your voice...' : isSpeaking ? '🔊 Sharyx is speaking...' : '⚡ Voice Engine Ready'}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
+            {isListening ? 'Listening' : (isSpeaking ? 'Speaking' : 'Idle')}
           </div>
 
-          <button
+          <button 
             onClick={() => isSpeaking ? sharyxVoice.stopSpeaking() : sharyxVoice.speak(conversation[conversation.length - 1]?.text || '')}
             style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
             title="Toggle Audio playback"
@@ -336,13 +336,13 @@ export default function VoiceTutorModal({ isOpen, onClose, initialConcept = '' }
           background: 'var(--bg-input)'
         }}>
           <button onClick={() => handleSendMessage("Diagnose my weak spots")} className="btn btn-secondary btn-sm" style={{ whiteSpace: 'nowrap', fontSize: '0.7rem' }}>
-            🎯 Diagnose Weakness
+            Diagnose Weakness
           </button>
           <button onClick={() => handleSendMessage("Give me a Socratic drill on Window Functions")} className="btn btn-secondary btn-sm" style={{ whiteSpace: 'nowrap', fontSize: '0.7rem' }}>
-            🦉 Socratic Drill
+            Socratic Drill
           </button>
           <button onClick={() => handleSendMessage("Explain Deadlocks in simple terms")} className="btn btn-secondary btn-sm" style={{ whiteSpace: 'nowrap', fontSize: '0.7rem' }}>
-            ⚡ Explain Deadlock
+            Explain Concept
           </button>
         </div>
 

@@ -143,6 +143,28 @@ class MemoryStore {
     };
   }
 
+  // Update student profile details
+  updateStudentProfile(updates) {
+    this.state.student = {
+      ...this.state.student,
+      ...updates
+    };
+    this.saveState();
+  }
+
+  // Record action in history timeline
+  recordHistory({ action, score = null, flaggedConcept = null, severity = 'Low' }) {
+    if (!this.state.history) this.state.history = [];
+    this.state.history.unshift({
+      date: new Date().toISOString().split('T')[0],
+      action,
+      score: score !== null ? `${score}%` : undefined,
+      flaggedConcept,
+      severity
+    });
+    this.saveState();
+  }
+
   // Set Active Remedial Recovery Course
   setActiveRemedial(remedialData) {
     this.state.activeRemedial = remedialData;

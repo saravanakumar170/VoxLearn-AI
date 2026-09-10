@@ -136,17 +136,11 @@ export default function GamificationHub({ onOpenVoice }) {
                   <span className="badge badge-brand">Rank #{pod.myRank}</span>
                 </div>
 
-                <div style={{ padding: '0.75rem', borderRadius: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border-subtle)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '0.25rem' }}>
-                    <span style={{ color: 'var(--accent-cyan)', fontWeight: 700 }}>Active Pod Challenge:</span>
-                    <span style={{ color: 'var(--text-muted)' }}>Avg Mastery: {pod.avgMastery}</span>
-                  </div>
-                  <p style={{ fontSize: '0.82rem', color: '#f8fafc' }}>
-                    🎯 "{pod.activeChallenge}"
-                  </p>
+                <div style={{ padding: '0.75rem', background: 'rgba(0,0,0,0.2)', borderRadius: '10px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                  <strong>Current Challenge:</strong> {pod.activeChallenge}
                 </div>
 
-                <button 
+                <button
                   onClick={onOpenVoice}
                   className="btn btn-voice btn-sm"
                   style={{ alignSelf: 'flex-end' }}

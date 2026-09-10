@@ -297,11 +297,11 @@ function UsersRoles() {
 // ─── Integrations & Privacy ───────────────────────────────────────────────────
 function Integrations() {
   const integrations = [
-    { name: "Google Classroom", desc: "Sync courses and assignments", status: "connected", icon: "📚" },
-    { name: "Moodle LMS", desc: "Import student rosters and grades", status: "connected", icon: "🎓" },
-    { name: "Microsoft Teams", desc: "Session notifications and calendar", status: "pending", icon: "🏢" },
-    { name: "Zoom", desc: "Sync virtual class sessions", status: "disconnected", icon: "📹" },
-    { name: "SSO (SAML 2.0)", desc: "Single sign-on for all users", status: "connected", icon: "🔐" },
+    { name: "Google Classroom", desc: "Sync courses and assignments", status: "connected", icon: "book" as const },
+    { name: "Moodle LMS", desc: "Import student rosters and grades", status: "connected", icon: "graduationCap" as const },
+    { name: "Microsoft Teams", desc: "Session notifications and calendar", status: "pending", icon: "building" as const },
+    { name: "Zoom", desc: "Sync virtual class sessions", status: "disconnected", icon: "globe" as const },
+    { name: "SSO (SAML 2.0)", desc: "Single sign-on for all users", status: "connected", icon: "lock" as const },
   ];
   return (
     <div className="p-4 sm:p-6 space-y-5 max-w-[900px] mx-auto">
@@ -313,10 +313,9 @@ function Integrations() {
           {[
             { label: "Student learning memory", desc: "AI remembers student patterns for personalisation" },
             { label: "FERPA-compliant data handling", desc: "All student data stays within institution boundaries" },
-            { label: "AI model data residency: India", desc: "No data leaves the selected region" },
-            { label: "Consent logging", desc: "Record and audit student/parent consent" },
+            { label: "Auto-anonymise analytics", desc: "Strip PII from aggregate teacher reports" },
           ].map(p => (
-            <div key={p.label} className="flex items-start justify-between py-3 border-b border-slate-100 last:border-0 gap-3">
+            <div key={p.label} className="flex items-center justify-between p-3 rounded-[10px] bg-slate-50 border border-slate-200">
               <div>
                 <div className="text-sm font-medium text-slate-800">{p.label}</div>
                 <div className="text-xs text-slate-400 mt-0.5">{p.desc}</div>
@@ -335,7 +334,9 @@ function Integrations() {
         <div className="space-y-3">
           {integrations.map(int => (
             <div key={int.name} className="flex items-center gap-4 p-4 rounded-[12px] bg-slate-50 border border-slate-200 flex-wrap">
-              <div className="text-2xl flex-shrink-0">{int.icon}</div>
+              <div className="w-10 h-10 rounded-[10px] bg-indigo-50 flex items-center justify-center flex-shrink-0">
+                <Icon name={int.icon} stroke="#4F46E5" size={20} />
+              </div>
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-semibold text-slate-900">{int.name}</div>
                 <div className="text-xs text-slate-400">{int.desc}</div>
@@ -346,24 +347,11 @@ function Integrations() {
           ))}
         </div>
       </Card>
-
-      <Card className="p-5">
-        <SectionLabel>AI Model Configuration</SectionLabel>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {[{ label: "Model Provider", value: "Anthropic Claude" }, { label: "Data Region", value: "Asia-Pacific (Mumbai)" }, { label: "Token Budget / Month", value: "500M tokens" }].map(c => (
-            <div key={c.label} className="bg-slate-50 rounded-[10px] p-3.5">
-              <div className="text-[10px] text-slate-400 uppercase tracking-widest mb-1">{c.label}</div>
-              <div className="text-sm font-semibold text-slate-900">{c.value}</div>
-            </div>
-          ))}
-        </div>
-        <SecondaryBtn className="mt-4">Edit AI Config</SecondaryBtn>
-      </Card>
     </div>
   );
 }
 
-// ─── Admin app wrapper ────────────────────────────────────────────────────────
+// ─── Admin App Wrapper ────────────────────────────────────────────────────────
 export function AdminApp({ onLogout }: { onLogout: () => void }) {
   const [screen, setScreen] = useState<AdminScreen>("a-dashboard");
 

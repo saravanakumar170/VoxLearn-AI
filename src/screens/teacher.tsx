@@ -146,38 +146,22 @@ export function StudentDetail({ onBack }: { onBack: () => void }) {
         <Icon name="chevronLeft" stroke="currentColor" size={16} /> Back to Students
       </button>
 
-      {/* Student header */}
-      <Card className="p-5">
-        <div className="flex items-start gap-4 flex-wrap">
-          <div className="w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold text-white flex-shrink-0" style={{ background: "linear-gradient(135deg,#6366F1,#8B5CF6)" }}>AS</div>
-          <div className="flex-1 min-w-0">
-            <div className="text-base font-bold text-slate-900">Aarav Sharma</div>
-            <div className="text-sm text-slate-500">2nd Year B.E. CSE · DBMS (Sem IV)</div>
-            <div className="flex flex-wrap gap-2 mt-2">
-              <Badge label="Level 7" color="indigo" /><Badge label="2,480 XP" color="violet" /><Badge label="At-risk" color="amber" />
-            </div>
-          </div>
-          <div className="flex gap-2 flex-wrap">
-            <SecondaryBtn>Message Student</SecondaryBtn>
-            <PrimaryBtn>Assign Remedial</PrimaryBtn>
-          </div>
-        </div>
-      </Card>
-
-      {/* AI suggestion */}
-      <Card className="p-4 border-indigo-200" style={{ background: "#EEF0FF" }}>
-        <div className="flex items-start gap-3">
-          <span className="text-xl">🤖</span>
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-2xl">AS</div>
           <div>
-            <div className="text-xs font-semibold text-indigo-700 mb-0.5">AI Suggested Intervention</div>
-            <p className="text-sm text-indigo-800">Send a 15-minute subqueries catch-up session — Aarav confuses correlated subqueries with JOINs. A focused micro-lesson should close this in one session.</p>
+            <h1 className="text-2xl font-bold text-slate-900">Aarav Sharma</h1>
+            <p className="text-sm text-slate-500">Student ID: 2025-CSE-42</p>
           </div>
         </div>
-      </Card>
+        <div className="flex gap-2">
+          <SecondaryBtn>Message</SecondaryBtn>
+          <PrimaryBtn>Assign Task</PrimaryBtn>
+        </div>
+      </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-        {/* Mastery trend */}
-        <Card className="p-5">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <Card className="sm:col-span-2 p-5">
           <SectionLabel>Mastery Trend (12 weeks)</SectionLabel>
           <div className="flex items-end gap-1 h-20">
             {trendData.map((v, i) => (
@@ -266,116 +250,27 @@ export function StudentsList({ onViewDetail }: { onViewDetail: () => void }) {
           <PrimaryBtn>Send Message</PrimaryBtn>
         </div>
       </div>
-      <Card className="overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[500px]">
-            <thead className="bg-slate-50 border-b border-slate-200">
-              <tr className="text-[10px] text-slate-400 uppercase tracking-widest">
-                <th className="text-left px-5 py-3 font-semibold">Student</th>
-                <th className="text-left px-5 py-3 font-semibold">Mastery</th>
-                <th className="text-left px-5 py-3 font-semibold">XP</th>
-                <th className="text-left px-5 py-3 font-semibold">Streak</th>
-                <th className="text-left px-5 py-3 font-semibold">Status</th>
-                <th className="px-5 py-3" />
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {students.map(s => (
-                <tr key={s.name} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-5 py-3.5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-                        style={{ background: s.risk ? "#F43F5E" : "linear-gradient(135deg,#6366F1,#8B5CF6)" }}>{s.avatar}</div>
-                      <span className="font-medium text-slate-900">{s.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <div className="flex items-center gap-2">
-                      <span className="tabular text-sm font-bold" style={{ color: s.mastery >= 70 ? "#10B981" : s.mastery >= 55 ? "#0EA5E9" : "#F43F5E" }}>{s.mastery}%</span>
-                      <div className="w-16"><ProgressBar value={s.mastery} color={s.mastery >= 70 ? "#10B981" : s.mastery >= 55 ? "#0EA5E9" : "#F43F5E"} height={4} /></div>
-                    </div>
-                  </td>
-                  <td className="px-5 py-3.5 tabular text-slate-700 font-medium">{s.xp.toLocaleString()}</td>
-                  <td className="px-5 py-3.5 text-sm">{s.streak > 0 ? `🔥 ${s.streak}d` : "—"}</td>
-                  <td className="px-5 py-3.5"><Badge label={s.risk ? "At-risk" : "On track"} color={s.risk ? "rose" : "emerald"} /></td>
-                  <td className="px-5 py-3.5 text-right">
-                    <button onClick={onViewDetail} className="text-xs text-indigo-500 hover:text-indigo-700 font-medium">View →</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Card>
-    </div>
-  );
-}
 
-// ─── Curriculum & RAG ─────────────────────────────────────────────────────────
-export function Curriculum() {
-  const sources = [
-    { name: "Lecture 1–8.pdf", type: "PDF", status: "indexed", size: "4.2 MB", coverage: "Ch.1–8 indexed" },
-    { name: "DBMS Textbook.pdf", type: "PDF", status: "indexed", size: "12 MB", coverage: "Ch.1–6 indexed" },
-    { name: "2022 QP.pdf", type: "PDF", status: "indexed", size: "0.8 MB", coverage: "Fully indexed" },
-    { name: "2023 QP.pdf", type: "PDF", status: "indexed", size: "0.9 MB", coverage: "Fully indexed" },
-    { name: "Lab Manual.pdf", type: "PDF", status: "processing", size: "2.1 MB", coverage: "" },
-    { name: "Syllabus SEM4.pdf", type: "PDF", status: "indexed", size: "0.3 MB", coverage: "Fully indexed" },
-  ];
-  return (
-    <div className="p-4 sm:p-6 max-w-[1000px] mx-auto space-y-5">
-      <div className="flex items-start justify-between flex-wrap gap-3">
-        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Curriculum & Sources</h1>
-        <PrimaryBtn>Auto-generate Materials</PrimaryBtn>
-      </div>
-
-      {/* Upload zone */}
-      <Card className="p-5">
-        <SectionLabel>Upload Sources</SectionLabel>
-        <div className="border-2 border-dashed border-slate-200 rounded-[12px] p-8 text-center hover:border-indigo-300 transition-colors cursor-pointer">
-          <Icon name="upload" stroke="#94A3B8" size={28} className="mx-auto mb-2" />
-          <div className="text-sm font-medium text-slate-600">Drop lecture notes, PDFs, textbooks, past papers</div>
-          <div className="text-xs text-slate-400 mt-1">PDF, DOCX, PPTX — max 50MB each</div>
-          <button className="mt-4 px-4 py-2 rounded-[10px] bg-indigo-50 text-indigo-700 text-xs font-semibold hover:bg-indigo-100">Browse files</button>
-        </div>
-      </Card>
-
-      {/* Source library */}
-      <Card className="p-5">
-        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-          <SectionLabel>Knowledge Library</SectionLabel>
-          <Badge label="6 sources · 8 sources indexed" color="emerald" />
-        </div>
-        <div className="space-y-2">
-          {sources.map(s => (
-            <div key={s.name} className="flex items-center gap-4 p-3 rounded-[10px] bg-slate-50 border border-slate-200 flex-wrap">
-              <div className="text-lg flex-shrink-0">📄</div>
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-slate-900 truncate">{s.name}</div>
-                <div className="text-[11px] text-slate-400">{s.size} · {s.coverage}</div>
+      <Card className="p-0 overflow-hidden">
+        <div className="divide-y divide-slate-200">
+          {students.map((s, i) => (
+            <div key={i} onClick={onViewDetail} className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors cursor-pointer">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs">{s.avatar}</div>
+                <div>
+                  <div className="text-sm font-semibold text-slate-900">{s.name}</div>
+                  <div className="text-xs text-slate-500">{s.xp} XP · {s.streak}d streak</div>
+                </div>
               </div>
-              <Badge label={s.status === "indexed" ? "Indexed" : "Processing…"} color={s.status === "indexed" ? "emerald" : "amber"} />
-              <div className="flex gap-2">
-                <button className="text-xs text-slate-400 hover:text-slate-700"><Icon name="refresh" stroke="currentColor" size={14} /></button>
-                <button className="text-xs text-rose-400 hover:text-rose-600"><Icon name="x" stroke="currentColor" size={14} /></button>
+              <div className="flex items-center gap-3">
+                <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${s.risk ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                  {s.mastery}% Mastery {s.risk ? '(At Risk)' : ''}
+                </span>
+                <Icon name="chevronRight" stroke="#94A3B8" size={16} />
               </div>
             </div>
           ))}
         </div>
-      </Card>
-
-      {/* Course outline editor */}
-      <Card className="p-5">
-        <SectionLabel>Course Outline</SectionLabel>
-        <div className="space-y-2">
-          {["Unit 1: Introduction to DBMS", "Unit 2: ER Model & Relational Model", "Unit 3: SQL — DDL, DML, DCL", "Unit 4: Advanced SQL — Subqueries, Joins, Window Functions", "Unit 5: Indexing, Transactions & Normalisation"].map((u, i) => (
-            <div key={i} className="flex items-center gap-3 p-3 rounded-[10px] bg-slate-50 border border-slate-200 hover:border-indigo-200 transition-colors cursor-pointer">
-              <div className="w-6 h-6 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-[10px] font-bold flex-shrink-0">{i + 1}</div>
-              <span className="text-sm text-slate-800 flex-1">{u}</span>
-              <Icon name="chevronRight" stroke="#94A3B8" size={14} />
-            </div>
-          ))}
-        </div>
-        <SecondaryBtn className="mt-4">Edit Outline</SecondaryBtn>
       </Card>
     </div>
   );

@@ -1,3 +1,11 @@
+if (typeof globalThis.webidl === 'undefined') {
+  globalThis.webidl = { util: { markAsUncloneable: () => {} } };
+} else if (!globalThis.webidl.util) {
+  globalThis.webidl.util = { markAsUncloneable: () => {} };
+} else if (!globalThis.webidl.util.markAsUncloneable) {
+  globalThis.webidl.util.markAsUncloneable = () => {};
+}
+
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 
@@ -8,8 +16,10 @@ vi.mock('canvas-confetti', () => {
   };
 });
 
-// Mock HTMLElement.prototype.scrollIntoView
-window.HTMLElement.prototype.scrollIntoView = vi.fn();
+// Mock HTMLElement.prototype.scrollIntoView safely
+if (typeof window !== 'undefined' && window.HTMLElement) {
+  window.HTMLElement.prototype.scrollIntoView = vi.fn();
+}
 
 // Mock SpeechSynthesis
 if (typeof window !== 'undefined') {

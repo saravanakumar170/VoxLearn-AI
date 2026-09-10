@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Icon, Logo, COURSES } from "./lib";
 import type { Role, AuthState, StudentScreen, CourseId } from "./lib";
+import { memoryStore } from "./services/memoryStore";
 
 import Landing from "./pages/Landing";
 import { Login, Register } from "./pages/Auth";
@@ -66,6 +67,14 @@ function StudentApp({ onLogout }: { onLogout: () => void }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isVoiceOpen, setIsVoiceOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [memState, setMemState] = useState(() => memoryStore.getState());
+
+  useEffect(() => {
+    return memoryStore.subscribe(newSt => setMemState({ ...newSt }));
+  }, []);
+
+  const student = memState.student || { name: 'Alex Rivera', level: 4, xp: 1450, streakDays: 14 };
+  const initials = student.name ? student.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase() : 'AS';
 
   const handleEnterCourse = (id: CourseId) => {
     setActiveCourse(id);
@@ -139,10 +148,10 @@ function StudentApp({ onLogout }: { onLogout: () => void }) {
           {!sidebarCollapsed ? (
             <div>
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold text-white flex-shrink-0" style={{ background: "linear-gradient(135deg,#6366F1,#8B5CF6)" }}>AS</div>
+                <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold text-white flex-shrink-0" style={{ background: "linear-gradient(135deg,#6366F1,#8B5CF6)" }}>{initials}</div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-xs font-semibold text-slate-800 truncate">Aarav Sharma</div>
-                  <div className="text-[10px] text-slate-400">Level 7 · 2,480 XP</div>
+                  <div className="text-xs font-semibold text-slate-800 truncate">{student.name}</div>
+                  <div className="text-[10px] text-slate-400">Level {student.level} · {student.xp.toLocaleString()} XP</div>
                 </div>
               </div>
               <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100">
@@ -152,7 +161,7 @@ function StudentApp({ onLogout }: { onLogout: () => void }) {
             </div>
           ) : (
             <div className="flex flex-col items-center gap-2">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold text-white" style={{ background: "linear-gradient(135deg,#6366F1,#8B5CF6)" }}>AS</div>
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold text-white" style={{ background: "linear-gradient(135deg,#6366F1,#8B5CF6)" }}>{initials}</div>
             </div>
           )}
         </div>
@@ -190,14 +199,14 @@ function StudentApp({ onLogout }: { onLogout: () => void }) {
             </button>
 
             <span className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold" style={{ background: "#EEF0FF", color: "#4F46E5" }}>
-              <Icon name="zap" stroke="#4F46E5" size={12} />2,480 XP
+              <Icon name="zap" stroke="#4F46E5" size={12} />{student.xp.toLocaleString()} XP
             </span>
-            <span className="hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700">🔥 12d</span>
+            <span className="hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700">🔥 {student.streakDays}d</span>
             
             <button onClick={() => setIsSettingsOpen(true)} className="p-1.5 hover:bg-slate-100 rounded-[8px]" title="API Setup">
               <Icon name="settings" stroke="#64748B" size={17} />
             </button>
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold text-white" style={{ background: "linear-gradient(135deg,#6366F1,#8B5CF6)" }}>AS</div>
+            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold text-white" style={{ background: "linear-gradient(135deg,#6366F1,#8B5CF6)" }}>{initials}</div>
           </div>
         </header>
 

@@ -401,105 +401,43 @@ export default function MentorBriefing({
           alignItems: 'center',
           justifyContent: 'space-between'
         }}>
-          <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'flex-start', maxWidth: '680px' }}>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
             <div style={{
-              width: '52px',
-              height: '52px',
-              borderRadius: '16px',
-              background: 'var(--gradient-brand)',
+              width: '48px',
+              height: '48px',
+              borderRadius: '14px',
+              background: 'rgba(99, 91, 255, 0.15)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              flexShrink: 0,
-              boxShadow: '0 4px 14px rgba(99, 91, 255, 0.35)'
+              color: 'var(--accent-primary)'
             }}>
-              <Bot size={28} color="#fff" />
+              <Bot size={26} />
             </div>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
-                <span className="badge badge-brand">AI Mentor Morning Briefing</span>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Updated 5m ago</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                  AI Mentor Daily Proactive Briefing
+                </h3>
+                <span className="badge badge-accent" style={{ fontSize: '0.7rem' }}>Live AI Advice</span>
               </div>
-              <h2 style={{ fontSize: '1.45rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>
-                Good morning, {studentStats?.name || 'Alex'}! 🚀
-              </h2>
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.55 }}>
-                "You completed 3 modules this week with an 18% improvement in SQL JOINs. Your target goal is 
-                <strong style={{ color: 'var(--text-primary)' }}> {studentStats?.targetGoal || 'AI Systems Engineer'}</strong>. Today, let's address your identified weakness in 
-                <span style={{ color: 'var(--accent-rose)', fontWeight: 600 }}> Window Functions</span> to unblock advanced database architecture."
+              <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', maxWidth: '600px' }}>
+                {riskAnalysis?.recommendation || "We identified a weak spot in Window Functions. Complete a 5-minute remedial module to boost retention."}
               </p>
             </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', minWidth: '220px' }}>
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
             <button 
-              onClick={onOpenVoice}
-              className="btn btn-voice"
-              style={{ width: '100%', padding: '0.75rem 1rem' }}
-            >
-              <Mic size={16} />
-              <span>Voice Tutor Briefing</span>
-            </button>
-            
-            <button 
-              onClick={() => onNavigateTab('generator')}
-              className="btn btn-secondary"
-              style={{ width: '100%', padding: '0.65rem 1rem', fontSize: '0.82rem' }}
-            >
-              <span>Resume Course Studio</span>
-              <ArrowRight size={14} />
-            </button>
-          </div>
-        </div>
-
-        {/* Early Learning-Risk Detection Alert Banner */}
-        {riskAnalysis?.hasCriticalRisk && (
-          <div className="glass-panel" style={{
-            padding: '1.25rem 1.5rem',
-            borderRadius: '18px',
-            background: 'var(--bg-card)',
-            border: '1px solid var(--accent-rose)',
-            boxShadow: 'var(--shadow-sm)',
-            display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '1rem'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', maxWidth: '750px' }}>
-              <div style={{
-                width: '42px',
-                height: '42px',
-                borderRadius: '12px',
-                background: 'var(--gradient-weakness)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0
-              }}>
-                <ShieldAlert size={22} color="#fff" />
-              </div>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
-                  <span className="badge badge-weak">🚨 Early Learning Risk Detected</span>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--accent-rose)', fontWeight: 600 }}>High Priority Remediation</span>
-                </div>
-                <p style={{ fontSize: '0.86rem', color: 'var(--text-secondary)' }}>
-                  {riskAnalysis.criticalPrereqGaps[0]?.alertMessage || `Weakness detected in prerequisite concepts affecting upcoming assessments.`}
-                </p>
-              </div>
-            </div>
-
-            <button 
-              onClick={() => onStartRemedial(riskAnalysis.criticalPrereqGaps[0]?.weakNode?.name || 'Window Functions (OVER, PARTITION)')}
+              onClick={() => onStartRemedial(riskAnalysis?.criticalPrereqGaps?.[0]?.weakNode?.name || 'Window Functions (OVER, PARTITION)')}
               className="btn btn-danger"
-              style={{ borderRadius: '10px', padding: '0.65rem 1.15rem' }}
+              style={{ borderRadius: '10px', padding: '0.65rem 1.15rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
             >
               <Zap size={16} />
               <span>Launch 5-Min Remedial Recovery</span>
             </button>
           </div>
-        )}
+        </div>
 
         {/* Quick Metrics Grid */}
         <div className="grid-cols-auto">

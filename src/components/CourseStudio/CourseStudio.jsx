@@ -4,7 +4,7 @@ import { sharyxVoice } from '../../services/sharyxVoiceService';
 import { memoryStore } from '../../services/memoryStore';
 import { 
   BookOpen, Sparkles, Play, Gamepad2, Radio, Video, 
-  MessageSquare, Terminal, FileText, CheckCircle, Flame, Volume2, ArrowRight
+  MessageSquare, Terminal, FileText, CheckCircle, Volume2, ArrowRight, Check, X
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -85,12 +85,12 @@ export default function CourseStudio({ onOpenVoice, initialTopic = '' }) {
     const isCorrect = idx === currentMod.gameChallenge.correctIndex;
     
     if (isCorrect) {
-      setGameFeedback({ correct: true, text: `🔥 Correct! ${currentMod.gameChallenge.explanation}` });
+      setGameFeedback({ correct: true, text: `Correct! ${currentMod.gameChallenge.explanation}` });
       setGameScore(prev => prev + 50);
       memoryStore.addXP(50, 'Completed Game Arena Challenge');
       confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
     } else {
-      setGameFeedback({ correct: false, text: `❌ Not quite. ${currentMod.gameChallenge.explanation}` });
+      setGameFeedback({ correct: false, text: `Not quite. ${currentMod.gameChallenge.explanation}` });
     }
   };
 
@@ -223,7 +223,7 @@ export default function CourseStudio({ onOpenVoice, initialTopic = '' }) {
                       transition: 'all 0.2s'
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.2rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyBetween: 'space-between', marginBottom: '0.2rem' }}>
                       <span style={{ fontSize: '0.7rem', color: isSelected ? 'var(--accent-primary)' : 'var(--text-muted)', fontWeight: 700 }}>
                         Module 0{idx + 1}
                       </span>
@@ -253,12 +253,12 @@ export default function CourseStudio({ onOpenVoice, initialTopic = '' }) {
               border: '1px solid var(--border-subtle)'
             }}>
               {[
-                { id: 'podcast', label: '🎙️ Podcast Mode', icon: <Radio size={14} /> },
-                { id: 'game', label: '🎮 Game Arena', icon: <Gamepad2 size={14} /> },
-                { id: 'socratic', label: '💬 Socratic Tutor', icon: <MessageSquare size={14} /> },
-                { id: 'sim', label: '🧩 Interactive Sim', icon: <Terminal size={14} /> },
-                { id: 'video', label: '🎥 Video Storyboard', icon: <Video size={14} /> },
-                { id: 'traditional', label: '📖 Traditional Notes', icon: <FileText size={14} /> },
+                { id: 'podcast', label: 'Podcast Mode', icon: <Radio size={14} /> },
+                { id: 'game', label: 'Game Arena', icon: <Gamepad2 size={14} /> },
+                { id: 'socratic', label: 'Socratic Tutor', icon: <MessageSquare size={14} /> },
+                { id: 'sim', label: 'Interactive Sim', icon: <Terminal size={14} /> },
+                { id: 'video', label: 'Video Storyboard', icon: <Video size={14} /> },
+                { id: 'traditional', label: 'Traditional Notes', icon: <FileText size={14} /> },
               ].map(tab => (
                 <button
                   key={tab.id}
@@ -283,7 +283,8 @@ export default function CourseStudio({ onOpenVoice, initialTopic = '' }) {
                     transition: 'all 0.2s'
                   }}
                 >
-                  {tab.label}
+                  {tab.icon}
+                  <span>{tab.label}</span>
                 </button>
               ))}
             </div>
@@ -326,7 +327,7 @@ export default function CourseStudio({ onOpenVoice, initialTopic = '' }) {
                     className="btn btn-voice"
                     style={{ borderRadius: '999px', padding: '0.75rem 1.5rem' }}
                   >
-                    {isPlayingPodcast ? '🔊 Broadcasting with Sharyx Voice...' : '▶ Play AI Audio Podcast'}
+                    {isPlayingPodcast ? 'Broadcasting with Sharyx Voice...' : 'Play AI Audio Podcast'}
                   </button>
                 </div>
 
@@ -469,7 +470,7 @@ export default function CourseStudio({ onOpenVoice, initialTopic = '' }) {
                       }}
                     >
                       <div style={{ fontSize: '0.7rem', color: msg.sender === 'student' ? 'rgba(255,255,255,0.7)' : 'var(--accent-primary)', marginBottom: '0.2rem', fontWeight: 600 }}>
-                        {msg.sender === 'student' ? 'Your Reasoning' : '🦉 Socratic Guide'}
+                        {msg.sender === 'student' ? 'Your Reasoning' : 'Socratic Guide'}
                       </div>
                       {msg.text}
                     </div>
@@ -572,7 +573,7 @@ export default function CourseStudio({ onOpenVoice, initialTopic = '' }) {
                         marginBottom: '0.75rem',
                         border: '1px dashed var(--border-subtle)'
                       }}>
-                        🎬 {scene.visual}
+                        {scene.visual}
                       </div>
 
                       <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.45 }}>

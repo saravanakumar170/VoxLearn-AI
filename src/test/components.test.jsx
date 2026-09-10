@@ -78,8 +78,8 @@ describe('VoxLearn AI - UI Component & Interaction Test Suite', () => {
         />
       );
 
-      expect(screen.getByText(/Good morning, Alex Rivera!/)).toBeInTheDocument();
-      expect(screen.getByText(/Early Learning Risk Detected/)).toBeInTheDocument();
+      expect(screen.getByText(/A unique learning experience/i)).toBeInTheDocument();
+      expect(screen.getByText(/AI Mentor Daily Proactive Briefing/i)).toBeInTheDocument();
       expect(screen.getByText(/72%/)).toBeInTheDocument();
       expect(screen.getByText('Launch 5-Min Remedial Recovery')).toBeInTheDocument();
     });
@@ -111,23 +111,23 @@ describe('VoxLearn AI - UI Component & Interaction Test Suite', () => {
       });
 
       // Switch to Game Arena Mode
-      const gameTab = screen.getByText('🎮 Game Arena');
+      const gameTab = screen.getByText(/Game Arena/i);
       fireEvent.click(gameTab);
       expect(screen.getByText(/Index Dungeon: The SARGable Quest/i)).toBeInTheDocument();
 
       // Switch to Interactive Sim
-      const simTab = screen.getByText('🧩 Interactive Sim');
+      const simTab = screen.getByText(/Interactive Sim/i);
       fireEvent.click(simTab);
       expect(screen.getAllByText(/Run Sandbox Trace/)[0]).toBeInTheDocument();
 
       // Switch to Traditional Notes
-      const tradTab = screen.getByText('📖 Traditional Notes');
+      const tradTab = screen.getByText(/Traditional Notes/i);
       fireEvent.click(tradTab);
       expect(screen.getByText('Structured Concept Summary')).toBeInTheDocument();
     });
   });
 
-  describe('Assessment Engine & Remedial Loop', () => {
+  describe('Assessment Engine & Autonomous Remedial Loop', () => {
     it('displays assessment questions and supports launching remedial sprint and retest', async () => {
       render(<AssessmentEngine onOpenVoice={vi.fn()} />);
 
@@ -183,7 +183,7 @@ describe('VoxLearn AI - UI Component & Interaction Test Suite', () => {
     it('handles quick prompt button click for weakness diagnosis', async () => {
       render(<VoiceTutorModal isOpen={true} onClose={vi.fn()} />);
       
-      const diagBtn = screen.getByText('🎯 Diagnose Weakness');
+      const diagBtn = screen.getByRole('button', { name: /Diagnose Weakness/i });
       fireEvent.click(diagBtn);
 
       await waitFor(() => {
@@ -232,7 +232,7 @@ describe('VoxLearn AI - UI Component & Interaction Test Suite', () => {
       
       expect(screen.getByText('Sharyx Voice AI')).toBeInTheDocument();
       expect(screen.getByText('Socratic Voice Companion')).toBeInTheDocument();
-      expect(screen.getByText('🎯 Diagnose Weakness')).toBeInTheDocument();
+      expect(screen.getByText(/Diagnose Weakness/i)).toBeInTheDocument();
     });
   });
 
@@ -269,7 +269,7 @@ describe('VoxLearn AI - UI Component & Interaction Test Suite', () => {
     it('renders the complete app and switches tabs seamlessly', () => {
       render(<App />);
       expect(screen.getAllByText('VoxLearn AI')[0]).toBeInTheDocument();
-      expect(screen.getByText(/Good morning, Alex Rivera!/)).toBeInTheDocument();
+      expect(screen.getByText(/A unique learning experience/i)).toBeInTheDocument();
 
       // Switch to Knowledge Graph tab
       const kgTabs = screen.getAllByText('Knowledge Graph');

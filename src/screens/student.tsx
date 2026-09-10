@@ -1,19 +1,30 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Icon, Card, Badge, ProgressBar, ProgressRing, PrimaryBtn, SecondaryBtn, GhostBtn, SectionLabel, Toggle, COURSES } from "../lib";
 import type { CourseId, StudentScreen } from "../lib";
 import { groqService } from "../services/groqService";
 import { ragService } from "../services/ragService";
 import { sharyxVoiceService } from "../services/sharyxVoiceService";
+import { memoryStore } from "../services/memoryStore";
+import { apiClient } from "../services/apiClient";
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 export function Dashboard({ onNav }: { onNav: (s: StudentScreen) => void }) {
-  const masteryData = [
-    { label: "SQL Basics", value: 92, color: "#10B981" },
-    { label: "JOINs", value: 85, color: "#10B981" },
-    { label: "GROUP BY", value: 78, color: "#0EA5E9" },
-    { label: "Subqueries", value: 54, color: "#F59E0B" },
-    { label: "Window Fns", value: 38, color: "#F43F5E" },
-  ];
+  const [storeState, setStoreState] = useState(() => memoryStore.getState());
+
+  useEffect(() => {
+    return memoryStore.subscribe((newSt) => setStoreState({ ...newSt }));
+  }, []);
+
+  const student = storeState.student || { name: "Alex Rivera", level: 4, xp: 1450, streakDays: 14, targetGoal: "AI Engineer" };
+  const firstName = student.name ? student.name.split(" ")[0] : "Student";
+  const risk = memoryStore.getRiskAnalysis();
+
+  const masteryData = (storeState.knowledgeNodes || []).slice(0, 5).map(node => ({
+    label: node.name,
+    value: node.mastery,
+    color: node.mastery >= 80 ? "#10B981" : node.mastery >= 60 ? "#0EA5E9" : node.mastery >= 45 ? "#F59E0B" : "#F43F5E"
+  }));
+
   const xpData = [120, 80, 200, 160, 240, 180, 320];
   const days = ["M", "T", "W", "T", "F", "S", "S"];
 
@@ -22,12 +33,16 @@ export function Dashboard({ onNav }: { onNav: (s: StudentScreen) => void }) {
       {/* Risk nudge */}
       <Card className="p-4 border-amber-200" style={{ background: "linear-gradient(135deg,#FFFBEB,#FEF3C7)", boxShadow: "none" }}>
         <div className="flex items-start gap-3">
-          <span className="text-xl flex-shrink-0">💛</span>
+          <Icon name="heart" stroke="#F59E0B" size={20} className="flex-shrink-0" />
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-semibold text-amber-900">Let's get back on track — you missed 2 sessions and DBMS quiz scores dipped.</div>
+            <div className="text-sm font-semibold text-amber-900">
+              {risk.hasCriticalRisk && risk.criticalPrereqGaps.length > 0 
+                ? risk.criticalPrereqGaps[0].alertMessage
+                : "Let's keep your streak alive — personalized practice recommendations ready!"}
+            </div>
             <div className="flex flex-wrap gap-1.5 mt-2">
-              {["2 missed sessions", "quiz 3/5", "prereq gap: JOINs"].map(f => (
-                <span key={f} className="px-2 py-0.5 rounded-full text-[11px] bg-amber-100 text-amber-800 font-medium">{f}</span>
+              {risk.weakNodes.slice(0, 3).map(w => (
+                <span key={w.id} className="px-2 py-0.5 rounded-full text-[11px] bg-amber-100 text-amber-800 font-medium">prereq gap: {w.name} ({w.mastery}%)</span>
               ))}
             </div>
           </div>
@@ -41,12 +56,11 @@ export function Dashboard({ onNav }: { onNav: (s: StudentScreen) => void }) {
       {/* Greeting */}
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Good morning, Aarav 👋</h1>
-          <p className="text-slate-500 text-sm mt-1">You have 3 tasks due today. Keep up the momentum.</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Good morning, {firstName}</h1>
+          <p className="text-sm text-slate-500 mt-1">Let's make progress on your {student.targetGoal} goal today.</p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="px-3 py-1.5 rounded-full text-xs font-semibold" style={{ background: "#EEF0FF", color: "#4F46E5" }}>Lv 7 · 2,480 XP</span>
-          <span className="px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700">🔥 12-day streak</span>
+        <div className="flex items-center gap-3">
+          <span className="px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 flex items-center gap-1.5"><Icon name="flame" stroke="#D97706" size={14} /> {student.streakDays}-day streak</span>
         </div>
       </div>
 
@@ -192,7 +206,7 @@ export function Dashboard({ onNav }: { onNav: (s: StudentScreen) => void }) {
             ].map((c, i) => (
               <button key={i} onClick={() => onNav("course-player")} className="text-left rounded-[12px] overflow-hidden border border-slate-100 hover:shadow-md transition-shadow group">
                 <div className={`h-16 sm:h-20 bg-gradient-to-br ${c.color} relative`}>
-                  {c.hot && <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/20 text-white">🔥 For you</span>}
+                  {c.hot && <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/20 text-white flex items-center gap-1"><Icon name="flame" stroke="white" size={10} /> For you</span>}
                 </div>
                 <div className="p-2.5">
                   <div className="text-xs font-semibold text-slate-800 leading-snug group-hover:text-indigo-700">{c.title}</div>
@@ -303,32 +317,37 @@ export function AITutor() {
           <div className="rounded-[10px] p-3" style={{ background: "#EEF0FF" }}>
             <div className="text-xs font-bold text-indigo-700">DBMS · SQL</div>
             <div className="text-[11px] text-indigo-500 mt-0.5">Sem IV — Module 4</div>
-            <div className="text-[11px] text-indigo-600 mt-2 font-medium">📄 8 sources indexed</div>
+            <div className="text-[11px] text-indigo-600 mt-2 font-medium">8 sources indexed</div>
+            <div className="text-xs font-semibold text-slate-400 uppercase tracking-widest mt-4 mb-2">Suggested prompts</div>
+            <div className="space-y-1.5">
+              {["Lecture 1–8.pdf", "2023 QP.pdf", "DBMS Textbook.pdf"].map(s => (
+                <div key={s} onClick={() => sendMsg(`Summarize key concepts from ${s}`)} className="flex items-center gap-2 text-xs text-slate-600 p-1.5 hover:bg-slate-50 rounded-[8px] cursor-pointer transition-colors">{s}</div>
+              ))}
+            </div>
           </div>
         </div>
-        <div className="p-4 border-b border-slate-100">
-          <div className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-2">Sources</div>
-          {["Lecture 1–8.pdf", "Textbook Ch.1–6", "2022 QP.pdf", "2023 QP.pdf"].map(s => (
-            <div key={s} onClick={() => sendMsg(`Summarize key concepts from ${s}`)} className="flex items-center gap-2 text-xs text-slate-600 p-1.5 hover:bg-slate-50 rounded-[8px] cursor-pointer transition-colors">📄 {s}</div>
-          ))}
+      </div>
+
+      {/* Main chat window */}
+      <div className="flex-1 flex flex-col min-w-0 bg-white">
+        {/* Chat header */}
+        <div className="h-14 px-4 border-b border-slate-200 flex items-center gap-3 flex-shrink-0">
+          <div className="w-8 h-8 rounded-[10px] flex items-center justify-center" style={{ background: "linear-gradient(135deg,#6366F1,#8B5CF6)" }}>
+            <Icon name="tutor" stroke="white" size={16} />
+          </div>
+          <div>
+            <div className="text-sm font-bold text-slate-900 leading-none">College AI Tutor</div>
+            <div className="text-[11px] text-slate-400 mt-0.5 font-medium">RAG Active · Anna Univ CSE Sem IV</div>
+          </div>
+          <span className="ml-auto text-xs text-indigo-600 font-medium">{socraticMode ? "Socratic" : ""}</span>
         </div>
+        
         <div className="p-4">
           <div className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-2">Socratic Mode</div>
           <div className="flex items-center justify-between p-3 rounded-[10px] bg-slate-50 border border-slate-200">
             <span className="text-xs font-medium text-slate-700">Guide via questions</span>
             <Toggle value={socraticMode} onChange={setSocraticMode} />
           </div>
-        </div>
-      </div>
-
-      {/* Chat */}
-      <div className="flex-1 flex flex-col bg-slate-50 min-w-0">
-        {/* Mobile context toggle */}
-        <div className="md:hidden flex items-center px-4 py-2 bg-white border-b border-slate-200 gap-3">
-          <button onClick={() => setShowContext(!showContext)} className="flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-slate-900">
-            <Icon name="book" stroke="currentColor" size={14} /> DBMS · SQL Context
-          </button>
-          <span className="ml-auto text-xs text-indigo-600 font-medium">{socraticMode ? "🔮 Socratic" : ""}</span>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -390,7 +409,7 @@ export function AITutor() {
               </button>
             </div>
           </div>
-          {socraticMode && <p className="text-[11px] text-indigo-500 mt-1.5 text-center">🔮 Socratic mode — I'll guide you with questions.</p>}
+          {socraticMode && <p className="text-[11px] text-indigo-500 mt-1.5 text-center">Socratic mode — I'll guide you with questions.</p>}
         </div>
       </div>
 
@@ -541,7 +560,7 @@ export function CourseCatalog({ onEnter, onNav }: { onEnter: (id: CourseId) => v
 
       {filtered.length === 0 && (
         <div className="text-center py-16 text-slate-400">
-          <div className="text-4xl mb-3">📚</div>
+          <div className="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center mx-auto mb-3"><Icon name="book" stroke="#4F46E5" size={24} /></div>
           <div className="text-sm font-medium">No courses match</div>
           <div className="text-xs mt-1">Try a different filter or generate a new course</div>
         </div>
@@ -881,14 +900,14 @@ export function Assessment({ onNav }: { onNav: (s: StudentScreen) => void }) {
 
           {hintShown && (
             <div className="mt-4 p-3 rounded-[10px] bg-violet-50 border border-violet-100 fade-in">
-              <div className="text-xs font-semibold text-violet-700 mb-1">🔮 Socratic Hint</div>
-              <p className="text-xs text-violet-700">Think: what does AVG(salary) return — a single value or many? How does a subquery isolate that?</p>
+              <div className="text-xs font-semibold text-violet-700 mb-1">Socratic Hint</div>
+              <p className="text-xs text-violet-800 leading-relaxed">Filter rows first, then group them, then filter groups with <code>HAVING</code>.</p>
             </div>
           )}
         </Card>
 
         <div className="flex items-center justify-between flex-wrap gap-3">
-          <button onClick={() => setHintShown(!hintShown)} className="text-sm text-indigo-500 hover:text-indigo-700 font-medium transition-colors">🔮 Need a hint (Socratic)</button>
+          <button onClick={() => setHintShown(!hintShown)} className="text-sm text-indigo-500 hover:text-indigo-700 font-medium transition-colors">Need a hint (Socratic)</button>
           <div className="flex gap-2">
             <SecondaryBtn onClick={() => setQ(Math.max(1, q - 1))}>← Prev</SecondaryBtn>
             {q < total
@@ -981,118 +1000,48 @@ export function AssessmentResults({ onNav }: { onNav: (s: StudentScreen) => void
 // ─── Gamification ─────────────────────────────────────────────────────────────
 export function Gamification() {
   const badges = [
-    { label: "7-Day Streak", icon: "🔥", earned: true }, { label: "SQL Starter", icon: "🎯", earned: true },
-    { label: "First Course", icon: "📚", earned: true }, { label: "Quiz Master", icon: "⚡", earned: true },
-    { label: "Concept Crusher", icon: "💡", earned: true }, { label: "Deep Dive", icon: "🔬", earned: false },
-    { label: "Window Wizard", icon: "🪄", earned: false }, { label: "Speed Learner", icon: "🚀", earned: false },
+    { label: "7-Day Streak", icon: "flame" as const, earned: true }, { label: "SQL Starter", icon: "target" as const, earned: true },
+    { label: "First Course", icon: "book" as const, earned: true }, { label: "Quiz Master", icon: "zap" as const, earned: true },
+    { label: "Concept Crusher", icon: "sparkles" as const, earned: true }, { label: "Deep Dive", icon: "search" as const, earned: false },
+    { label: "Window Wizard", icon: "wand" as const, earned: false }, { label: "Speed Learner", icon: "arrowRight" as const, earned: false },
   ];
-  const leaderboard = [
-    { rank: 1, name: "Keerthana R.", xp: 3180, avatar: "KR" },
-    { rank: 2, name: "Dev Patel", xp: 2890, avatar: "DP" },
-    { rank: 3, name: "Aarav Sharma", xp: 2480, avatar: "AS", isMe: true },
-    { rank: 4, name: "Priya Nair", xp: 2240, avatar: "PN" },
-    { rank: 5, name: "Arjun M.", xp: 2100, avatar: "AM" },
-  ];
-  const cal = Array.from({ length: 4 }, () => Array.from({ length: 7 }, () => ({ intensity: Math.random() > 0.3 ? Math.floor(Math.random() * 3) + 1 : 0 })));
-  const iBg = ["bg-slate-100", "bg-indigo-100", "bg-indigo-300", "bg-indigo-500"];
-
   return (
-    <div className="p-4 sm:p-6 space-y-5 max-w-[1200px] mx-auto">
-      {/* Level hero */}
-      <div className="rounded-[16px] p-5 sm:p-6 text-white" style={{ background: "linear-gradient(135deg,#6366F1,#8B5CF6)" }}>
-        <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-          <div>
-            <div className="text-sm font-medium text-white/70">Current Level</div>
-            <div className="text-3xl sm:text-4xl font-bold tracking-tight mt-1">Level 7</div>
-            <div className="text-sm text-white/80 mt-1">AI Builders — Coimbatore · Rank #3</div>
-          </div>
-          <div className="text-right">
-            <div className="text-2xl sm:text-3xl font-bold tabular">2,480</div>
-            <div className="text-sm text-white/70">/ 3,000 XP</div>
-          </div>
+    <div className="p-4 sm:p-6 max-w-[1000px] mx-auto space-y-6">
+      <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Gamification & XP Arena</h1>
+      <Card className="p-6 text-white" style={{ background: "linear-gradient(135deg,#6366F1,#8B5CF6)" }}>
+        <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
+          <div><div className="text-xs font-semibold uppercase tracking-wider text-white/70">Level 7 Student</div><div className="text-2xl font-extrabold">2,480 / 3,000 XP</div></div>
+          <Badge label="Rank #4 in CSE-B" color="amber" />
         </div>
-        <div className="bg-white/20 rounded-full h-3 overflow-hidden">
-          <div className="h-full bg-white rounded-full" style={{ width: "82.7%" }} />
-        </div>
-        <div className="text-xs text-white/60 mt-2">Next reward at Level 8: 🏆 Deep Dive Badge + 500 XP Bonus</div>
+        <ProgressBar value={(2480 / 3000) * 100} color="white" height={10} />
+        <div className="text-xs text-white/60 mt-2">Next reward at Level 8: Deep Dive Badge + 500 XP Bonus</div>
+      </Card>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        {[
+          { label: "Daily Streak", val: "12d", color: "#F59E0B" },
+          { label: "Badges Earned", val: "5 / 8", color: "#6366F1" },
+          { label: "Questions Correct", val: "142", color: "#10B981" },
+          { label: "Class Rank", val: "#4", color: "#8B5CF6" },
+        ].map((s, i) => (
+          <Card key={i} className="p-4 text-center">
+            <div className="text-3xl font-bold tabular" style={{ color: s.color }}>{s.val}</div>
+            <div className="text-xs text-slate-500 mt-1 font-medium">{s.label}</div>
+          </Card>
+        ))}
       </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {/* Streak */}
-        <Card className="p-5">
-          <div className="flex items-start justify-between mb-3">
-            <div>
-              <SectionLabel>Streak</SectionLabel>
-              <div className="text-3xl font-bold text-amber-500 tabular">🔥 12</div>
-              <div className="text-sm text-slate-500 mt-0.5">days in a row · Best: 18</div>
+      <Card className="p-5">
+        <SectionLabel>Badges & Milestones</SectionLabel>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {badges.map(b => (
+            <div key={b.label} className={`p-3.5 rounded-[12px] border text-center transition-all ${b.earned ? "bg-indigo-50/50 border-indigo-200" : "bg-slate-50 border-slate-200 opacity-50"}`}>
+              <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center mx-auto mb-2 shadow-sm">
+                <Icon name={b.icon} stroke={b.earned ? "#4F46E5" : "#94A3B8"} size={20} />
+              </div>
+              <div className="text-[11px] font-semibold text-slate-700">{b.label}</div>
             </div>
-          </div>
-          <SectionLabel>Last 4 weeks</SectionLabel>
-          <div className="grid gap-1" style={{ gridTemplateColumns: "repeat(7,1fr)" }}>
-            {["M","T","W","T","F","S","S"].map((d, i) => <div key={`hd-${i}`} className="text-center text-[9px] text-slate-400">{d}</div>)}
-            {cal.flatMap((week, wi) => week.map((day, di) => (
-              <div key={`${wi}-${di}`} className={`aspect-square rounded-sm ${iBg[day.intensity]}`} />
-            )))}
-          </div>
-        </Card>
-
-        {/* Badges */}
-        <Card className="p-5">
-          <SectionLabel>Badges — 5/8 earned</SectionLabel>
-          <div className="grid grid-cols-4 gap-2">
-            {badges.map(b => (
-              <div key={b.label} className={`flex flex-col items-center gap-1 p-2 rounded-[10px] ${b.earned ? "hover:bg-slate-50" : "opacity-40"}`}>
-                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-lg bg-slate-50 ${!b.earned ? "grayscale" : ""}`}>{b.icon}</div>
-                <span className="text-[9px] text-center text-slate-500 font-medium leading-tight">{b.label}</span>
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        {/* Daily Challenges */}
-        <Card className="p-5">
-          <SectionLabel>Daily Challenges</SectionLabel>
-          <div className="space-y-2.5">
-            {[{ title: "Complete 1 quiz", xp: 50, done: true }, { title: "Study 30 minutes", xp: 80, done: true }, { title: "Answer a peer's question", xp: 120, done: false }].map((c, i) => (
-              <div key={i} className={`flex items-center gap-3 p-3 rounded-[10px] ${c.done ? "bg-emerald-50 border border-emerald-100" : "bg-slate-50 border border-slate-200"}`}>
-                <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${c.done ? "bg-emerald-400" : "bg-slate-200"}`}>
-                  {c.done ? <Icon name="check" stroke="white" size={10} /> : <span className="text-[10px] font-bold text-slate-400">{i+1}</span>}
-                </div>
-                <span className={`text-xs flex-1 font-medium ${c.done ? "text-emerald-700 line-through" : "text-slate-700"}`}>{c.title}</span>
-                <span className={`text-xs font-bold tabular ${c.done ? "text-emerald-600" : "text-indigo-600"}`}>+{c.xp}</span>
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        {/* Leaderboard */}
-        <Card className="sm:col-span-2 p-5">
-          <div className="flex items-center justify-between mb-4"><SectionLabel>Leaderboard · AI Builders</SectionLabel><Badge label="You: #3" color="indigo" /></div>
-          <div className="space-y-2">
-            {leaderboard.map((p, i) => (
-              <div key={i} className={`flex items-center gap-3 p-3 rounded-[10px] ${p.isMe ? "border border-indigo-200" : "hover:bg-slate-50"}`} style={p.isMe ? { background: "#EEF0FF" } : {}}>
-                <span className="text-sm font-bold tabular w-5 text-center">{p.rank <= 3 ? ["🥇","🥈","🥉"][p.rank-1] : p.rank}</span>
-                <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold" style={{ background: p.isMe ? "linear-gradient(135deg,#6366F1,#8B5CF6)" : "#E2E8F0", color: p.isMe ? "white" : "#64748B" }}>{p.avatar}</div>
-                <span className={`flex-1 text-sm font-medium ${p.isMe ? "text-indigo-800 font-semibold" : "text-slate-700"}`}>{p.name}{p.isMe ? " (You)" : ""}</span>
-                <span className="tabular text-sm font-bold text-slate-800">{p.xp.toLocaleString()}</span>
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        {/* Mastery bars */}
-        <Card className="p-5">
-          <SectionLabel>Topic Mastery</SectionLabel>
-          <div className="space-y-3">
-            {[{ label: "SQL Basics", value: 92, color: "#10B981" }, { label: "JOINs", value: 85, color: "#10B981" }, { label: "GROUP BY", value: 78, color: "#0EA5E9" }, { label: "Subqueries", value: 54, color: "#F59E0B" }, { label: "Window Fns", value: 38, color: "#F43F5E" }].map(m => (
-              <div key={m.label}>
-                <div className="flex justify-between text-xs mb-1"><span className="text-slate-600">{m.label}</span><span className="tabular font-semibold" style={{ color: m.color }}>{m.value}%</span></div>
-                <ProgressBar value={m.value} color={m.color} height={5} />
-              </div>
-            ))}
-          </div>
-        </Card>
-      </div>
+          ))}
+        </div>
+      </Card>
     </div>
   );
 }
@@ -1448,24 +1397,47 @@ export function PeerLearning({ onNav }: { onNav?: (s: StudentScreen) => void }) 
 export function Profile() {
   const [tab, setTab] = useState<"profile" | "memory" | "notifications" | "account" | "privacy">("profile");
   const [memToggles, setMemToggles] = useState({ strengths: true, weaknesses: true, pace: true, focusTimes: true, mistakes: true });
+  const [isEditing, setIsEditing] = useState(false);
+  const [storeState, setStoreState] = useState(() => memoryStore.getState());
+
+  const student = storeState.student || { name: "Aarav Sharma", targetGoal: "Become an AI Engineer", targetRole: "AI Engineer", level: 7, xp: 2480, streakDays: 12, preferredMode: "Interactive, Conversational" };
+  const initials = student.name ? student.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase() : "AS";
+
+  const [editName, setEditName] = useState(student.name);
+  const [editGoal, setEditGoal] = useState(student.targetGoal);
+  const [editRole, setEditRole] = useState(student.targetRole || "AI Engineer");
+  const [editMode, setEditMode] = useState(student.preferredMode || "Interactive, Conversational");
+
   const tabs = ["profile", "memory", "notifications", "account", "privacy"] as const;
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await apiClient.updateProfile({
+      name: editName,
+      targetGoal: editGoal,
+      targetRole: editRole,
+      preferredMode: editMode
+    });
+    setIsEditing(false);
+    setStoreState(memoryStore.getState());
+  };
 
   return (
     <div className="p-4 sm:p-6 max-w-[800px] mx-auto space-y-5">
       {/* Profile header */}
       <Card className="p-5">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold text-white flex-shrink-0" style={{ background: "linear-gradient(135deg,#6366F1,#8B5CF6)" }}>AS</div>
+          <div className="w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold text-white flex-shrink-0" style={{ background: "linear-gradient(135deg,#6366F1,#8B5CF6)" }}>{initials}</div>
           <div className="flex-1 min-w-0">
-            <div className="text-base font-bold text-slate-900">Aarav Sharma</div>
-            <div className="text-sm text-slate-500">2nd Year B.E. CSE · Coimbatore</div>
+            <div className="text-base font-bold text-slate-900">{student.name}</div>
+            <div className="text-sm text-slate-500">Target Goal: {student.targetGoal}</div>
             <div className="flex items-center gap-2 mt-2 flex-wrap">
-              <Badge label="Level 7" color="indigo" />
-              <Badge label="2,480 XP" color="violet" />
-              <Badge label="🔥 12-day streak" color="amber" />
+              <Badge label={`Level ${student.level}`} color="indigo" />
+              <Badge label={`${student.xp.toLocaleString()} XP`} color="violet" />
+              <Badge label={`🔥 ${student.streakDays}-day streak`} color="amber" />
             </div>
           </div>
-          <SecondaryBtn>Edit</SecondaryBtn>
+          <SecondaryBtn onClick={() => setIsEditing(!isEditing)}>{isEditing ? "Cancel" : "Edit Profile"}</SecondaryBtn>
         </div>
       </Card>
 
@@ -1479,13 +1451,41 @@ export function Profile() {
         ))}
       </div>
 
-      {tab === "profile" && (
+      {isEditing && (
+        <Card className="p-5">
+          <SectionLabel>Edit Student Profile</SectionLabel>
+          <form onSubmit={handleSaveProfile} className="space-y-4">
+            <div>
+              <label className="text-xs font-semibold text-slate-700 block mb-1">Full Name</label>
+              <input value={editName} onChange={e => setEditName(e.target.value)} className="w-full text-sm p-2.5 rounded-[8px] border border-slate-200 bg-white text-slate-900 outline-none focus:border-indigo-400" />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-slate-700 block mb-1">Primary Learning Goal</label>
+              <input value={editGoal} onChange={e => setEditGoal(e.target.value)} className="w-full text-sm p-2.5 rounded-[8px] border border-slate-200 bg-white text-slate-900 outline-none focus:border-indigo-400" />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-slate-700 block mb-1">Target Career Role</label>
+              <input value={editRole} onChange={e => setEditRole(e.target.value)} className="w-full text-sm p-2.5 rounded-[8px] border border-slate-200 bg-white text-slate-900 outline-none focus:border-indigo-400" />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-slate-700 block mb-1">Preferred Learning Style</label>
+              <input value={editMode} onChange={e => setEditMode(e.target.value)} className="w-full text-sm p-2.5 rounded-[8px] border border-slate-200 bg-white text-slate-900 outline-none focus:border-indigo-400" />
+            </div>
+            <div className="flex gap-3 pt-2">
+              <SecondaryBtn onClick={() => setIsEditing(false)}>Cancel</SecondaryBtn>
+              <PrimaryBtn type="submit">Save Changes</PrimaryBtn>
+            </div>
+          </form>
+        </Card>
+      )}
+
+      {tab === "profile" && !isEditing && (
         <Card className="p-5 space-y-4">
           <SectionLabel>Learning Profile</SectionLabel>
           {[
-            { label: "Goal", value: "Become an AI Engineer" },
-            { label: "Role", value: "Student — 2nd Year B.E. CSE" },
-            { label: "Preferred styles", value: "Interactive, Conversational, Game" },
+            { label: "Goal", value: student.targetGoal },
+            { label: "Role", value: student.targetRole || "AI Engineer" },
+            { label: "Preferred styles", value: student.preferredMode || "Interactive, Conversational" },
             { label: "Focus window", value: "7–9pm" },
           ].map(f => (
             <div key={f.label} className="flex items-start justify-between gap-3 py-3 border-b border-slate-100 last:border-0">
@@ -1493,7 +1493,7 @@ export function Profile() {
               <div className="text-sm text-slate-900 font-semibold text-right">{f.value}</div>
             </div>
           ))}
-          <SecondaryBtn>Edit Learning Profile</SecondaryBtn>
+          <SecondaryBtn onClick={() => setIsEditing(true)}>Edit Learning Profile</SecondaryBtn>
         </Card>
       )}
 
@@ -1600,7 +1600,7 @@ export function DesignSystem() {
         <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-5">Typography</h2>
         <Card className="p-5 sm:p-6 space-y-5">
           <div><div className="text-[11px] text-slate-400 mono mb-1">Display · 36px · 800</div><div className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tighter">Become an AI Engineer</div></div>
-          <div><div className="text-[11px] text-slate-400 mono mb-1">H1 · 24px · 700</div><div className="text-2xl font-bold text-slate-900 tracking-tight">Good morning, Aarav 👋</div></div>
+          <div><div className="text-[11px] text-slate-400 mono mb-1">H1 · 24px · 700</div><div className="text-2xl font-bold text-slate-900 tracking-tight">Good morning, Aarav</div></div>
           <div><div className="text-[11px] text-slate-400 mono mb-1">H2 · 18px · 600</div><div className="text-lg font-semibold text-slate-800">Database Management Systems</div></div>
           <div><div className="text-[11px] text-slate-400 mono mb-1">Body · 14px · 400</div><div className="text-sm text-slate-700 leading-relaxed">A subquery is a query nested inside another SQL query. They allow complex filtering with elegance.</div></div>
           <div><div className="text-[11px] text-slate-400 mono mb-1">Label · 11px · uppercase</div><div className="text-[11px] font-semibold uppercase tracking-widest text-slate-400">Active Context · DBMS · SQL</div></div>

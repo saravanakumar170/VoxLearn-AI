@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Icon, Logo, PrimaryBtn, SecondaryBtn, ProgressRing } from "../lib";
 import type { AuthState } from "../lib";
+import { memoryStore } from "../services/memoryStore";
 
 const goalChips = ["Become an AI Engineer", "Pass DBMS Exam", "Learn Python", "Crack Placements", "Build a Startup", "Upskill at work"];
 const styleChips = ["Lesson", "Conversation", "Game", "Podcast", "Video", "Interactive", "Simulation", "Problem-Solving"];
@@ -50,7 +51,9 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
         {step === 1 && (
           <div className="fade-in">
             <div className="text-center mb-8">
-              <div className="text-4xl mb-3">🎯</div>
+              <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center mx-auto mb-3">
+                <Icon name="target" stroke="#4F46E5" size={24} />
+              </div>
               <h2 className="text-2xl font-bold text-slate-900 tracking-tight mb-2">What's your goal?</h2>
               <p className="text-slate-500 text-sm">We'll build a personalised roadmap around it.</p>
             </div>
@@ -79,7 +82,9 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
         {step === 2 && (
           <div className="fade-in">
             <div className="text-center mb-6">
-              <div className="text-4xl mb-3">👤</div>
+              <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center mx-auto mb-3">
+                <Icon name="user" stroke="#4F46E5" size={24} />
+              </div>
               <h2 className="text-2xl font-bold text-slate-900 tracking-tight mb-2">Tell us about you</h2>
               <p className="text-slate-500 text-sm">So LearnOS adapts the depth, pace, and style.</p>
             </div>
@@ -134,7 +139,15 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
 
             <div className="flex gap-3 mt-8">
               <SecondaryBtn onClick={() => setStep(1)} className="flex-1">Back</SecondaryBtn>
-              <PrimaryBtn onClick={onDone} className="flex-1 py-3">Enter LearnOS 🚀</PrimaryBtn>
+              <PrimaryBtn onClick={() => {
+                const finalGoal = customGoal.trim() || goal || "AI Engineer & Software Systems";
+                memoryStore.updateStudentProfile({
+                  targetGoal: finalGoal,
+                  targetRole: finalGoal,
+                  preferredMode: styles.join(", ") || "Interactive Simulation"
+                });
+                onDone();
+              }} className="flex-1 py-3">Enter LearnOS <Icon name="arrowRight" stroke="white" size={16} /></PrimaryBtn>
             </div>
           </div>
         )}
@@ -171,7 +184,9 @@ export function Diagnosis({ onDone }: { onDone: () => void }) {
                 strokeDasharray={2 * Math.PI * 52} strokeDashoffset={2 * Math.PI * 52 * 0.3}
                 strokeLinecap="round" className="pulse-ring" />
             </svg>
-            <div className="absolute inset-0 flex items-center justify-center text-2xl">🧠</div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Icon name="brain" stroke="#4F46E5" size={40} />
+            </div>
           </div>
           <h2 className="text-xl font-bold text-slate-900 mb-2">Building your knowledge graph…</h2>
           <p className="text-slate-500 text-sm">Mapping your strengths and finding where to start.</p>
@@ -224,8 +239,8 @@ export function Diagnosis({ onDone }: { onDone: () => void }) {
               </button>
             ))}
           </div>
-          <div className="mt-4 flex items-start gap-2 p-3 rounded-[10px] bg-violet-50 border border-violet-100">
-            <span className="text-base">🤖</span>
+          <div className="mt-4 flex items-center gap-2 p-3 rounded-[10px] bg-violet-50 border border-violet-100">
+            <Icon name="bot" stroke="#7C3AED" size={18} />
             <p className="text-xs text-violet-700 font-medium">Skip if unsure — I'll adapt the next question based on your pattern.</p>
           </div>
         </div>
@@ -233,9 +248,9 @@ export function Diagnosis({ onDone }: { onDone: () => void }) {
         <div className="flex gap-3">
           <button onClick={handleNext} className="text-sm text-slate-400 hover:text-slate-600 px-4 py-2.5">Skip</button>
           <button onClick={handleNext} disabled={selected === null}
-            className="flex-1 py-2.5 rounded-[10px] text-sm font-semibold text-white transition-all disabled:opacity-40"
+            className="flex-1 py-2.5 rounded-[10px] text-sm font-semibold text-white transition-all disabled:opacity-40 flex items-center justify-center gap-2"
             style={{ background: "linear-gradient(135deg,#6366F1,#8B5CF6)" }}>
-            {q < total ? "Next question →" : "Finish calibration →"}
+            {q < total ? "Next question" : "Finish calibration"} <Icon name="arrowRight" stroke="white" size={16} />
           </button>
         </div>
 
