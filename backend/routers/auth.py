@@ -50,7 +50,11 @@ def register(user_data: UserRegisterSchema, db: Session = Depends(get_db)):
         email=user_data.email,
         hashed_password=user_data.password, # Hash in production
         role=user_data.role,
-        target_goal=user_data.targetGoal
+        target_goal=user_data.targetGoal,
+        level=1,
+        xp=0,
+        xp_to_next_level=1000,
+        streak_days=1
     )
     db.add(new_user)
     db.commit()

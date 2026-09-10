@@ -19,6 +19,9 @@ class ChatRequestSchema(BaseModel):
 def get_groq_api_key():
     return os.getenv("VITE_GROQ_API_KEY", os.getenv("GROQ_API_KEY", ""))
 
+def get_groq_model():
+    return os.getenv("GROQ_MODEL", os.getenv("VITE_GROQ_MODEL", "openai/gpt-oss-120b"))
+
 @router.post("/chat")
 def tutor_chat(req: ChatRequestSchema):
     api_key = get_groq_api_key()
@@ -40,6 +43,7 @@ def tutor_chat(req: ChatRequestSchema):
                     messages.append({"role": role, "content": text})
             messages.append({"role": "user", "content": req.query})
 
+            model_name = get_groq_model()
             resp = requests.post(
                 "https://api.groq.com/openai/v1/chat/completions",
                 headers={
@@ -47,7 +51,7 @@ def tutor_chat(req: ChatRequestSchema):
                     "Authorization": f"Bearer {api_key}"
                 },
                 json={
-                    "model": "llama-3.3-70b-versatile",
+                    "model": model_name,
                     "messages": messages,
                     "temperature": 0.7
                 },

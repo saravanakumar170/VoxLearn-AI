@@ -100,7 +100,7 @@ def query_rag(req: RAGQuerySchema, db: Session = Depends(get_db)):
                     "Authorization": f"Bearer {api_key}"
                 },
                 json={
-                    "model": "llama-3.3-70b-versatile",
+                    "model": "openai/gpt-oss-120b",
                     "messages": [
                         {"role": "system", "content": f"You are VoxLearn AI's College AI Tutor. Answer using curriculum materials. Context:\n{context_text}"},
                         {"role": "user", "content": req.query}

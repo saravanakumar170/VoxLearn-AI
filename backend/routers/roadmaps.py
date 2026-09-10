@@ -11,6 +11,7 @@ class ProjectSubmitSchema(BaseModel):
     projectTitle: str
     submissionText: str
 
+@router.get("/")
 @router.get("/career")
 def get_career_roadmap(role: Optional[str] = "AI Engineer"):
     return {

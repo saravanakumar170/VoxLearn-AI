@@ -1,6 +1,8 @@
 import { useState } from "react";
-import { Icon, Logo, PrimaryBtn, SecondaryBtn } from "../lib";
+import { Icon, Logo, PrimaryBtn } from "../lib";
 import type { AuthState, Role, IconName } from "../lib";
+import { memoryStore } from "../services/memoryStore";
+import { apiClient } from "../services/apiClient";
 
 // ─── Login ────────────────────────────────────────────────────────────────────
 const DEMO_ACCOUNTS: { role: Role; name: string; email: string; icon: IconName; color: string }[] = [
@@ -19,6 +21,27 @@ export function Login({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
+
+  const handleLoginSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (email) {
+      const loginName = email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      try {
+        const user = await apiClient.login(email, password || "password");
+        memoryStore.updateStudentProfile({
+          name: user?.name || loginName,
+          email: email,
+          role: user?.role || "student"
+        });
+      } catch (err) {
+        memoryStore.updateStudentProfile({
+          name: loginName,
+          email: email
+        });
+      }
+    }
+    onDemoLogin("student");
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
@@ -57,7 +80,18 @@ export function Login({
             <div className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-3">Demo accounts — click to log in instantly</div>
             <div className="space-y-2">
               {DEMO_ACCOUNTS.map(d => (
-                <button key={d.role} onClick={() => onDemoLogin(d.role)}
+                <button key={d.role} onClick={() => {
+                  memoryStore.updateStudentProfile({
+                    name: d.name,
+                    email: d.email,
+                    role: d.role,
+                    level: 7,
+                    xp: 2480,
+                    streakDays: 12,
+                    targetGoal: "AI Engineer & Distributed Systems Specialist"
+                  });
+                  onDemoLogin(d.role);
+                }}
                   className={`w-full flex items-center gap-3 p-3 rounded-[10px] border transition-all hover:shadow-sm text-left ${d.color}`}>
                   <Icon name={d.icon} stroke="currentColor" size={20} />
                   <div className="flex-1 min-w-0">
@@ -76,7 +110,7 @@ export function Login({
             <div className="flex-1 h-px bg-slate-200" />
           </div>
 
-          <form onSubmit={e => { e.preventDefault(); onDemoLogin("student"); }} className="space-y-4">
+          <form onSubmit={handleLoginSubmit} className="space-y-4">
             <div>
               <label className="text-xs font-semibold text-slate-700 block mb-1.5">Email</label>
               <div className="flex items-center gap-2 px-3 py-2.5 rounded-[10px] border border-slate-200 bg-white focus-within:border-indigo-400 transition-colors">
@@ -137,6 +171,31 @@ export function Register({
     { role: "admin", label: "Admin", icon: "building", desc: "Org-level insights" },
   ];
 
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const finalName = name.trim() || "New Learner";
+    const finalEmail = email.trim() || "user@learnos.ai";
+
+    memoryStore.resetForNewUser({
+      name: finalName,
+      email: finalEmail,
+      role: role,
+      targetGoal: "AI Engineer & Software Systems"
+    });
+
+    try {
+      await apiClient.register(finalName, finalEmail, password || "password", role);
+    } catch (err) {
+      console.warn("Register API call fallback:", err);
+    }
+
+    if (onRegister) {
+      onRegister(role);
+    } else {
+      onDemoLogin(role);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 sm:p-10">
       <div className="w-full max-w-md">
@@ -160,13 +219,13 @@ export function Register({
           </div>
         </div>
 
-        <form onSubmit={e => { e.preventDefault(); (onRegister ?? onDemoLogin)(role); }} className="space-y-4">
+        <form onSubmit={handleRegisterSubmit} className="space-y-4">
           <div>
             <label className="text-xs font-semibold text-slate-700 block mb-1.5">Full name</label>
             <div className="flex items-center gap-2 px-3 py-2.5 rounded-[10px] border border-slate-200 bg-white focus-within:border-indigo-400">
               <Icon name="user" stroke="#94A3B8" size={16} />
               <input type="text" value={name} onChange={e => setName(e.target.value)}
-                placeholder="Your full name" className="flex-1 text-sm outline-none text-slate-800 placeholder:text-slate-400" />
+                placeholder="Your full name" className="flex-1 text-sm outline-none text-slate-800 placeholder:text-slate-400" required />
             </div>
           </div>
           <div>
@@ -174,7 +233,7 @@ export function Register({
             <div className="flex items-center gap-2 px-3 py-2.5 rounded-[10px] border border-slate-200 bg-white focus-within:border-indigo-400">
               <Icon name="mail" stroke="#94A3B8" size={16} />
               <input type="email" value={email} onChange={e => setEmail(e.target.value)}
-                placeholder="you@example.com" className="flex-1 text-sm outline-none text-slate-800 placeholder:text-slate-400" />
+                placeholder="you@example.com" className="flex-1 text-sm outline-none text-slate-800 placeholder:text-slate-400" required />
             </div>
           </div>
           <div>
@@ -182,7 +241,7 @@ export function Register({
             <div className="flex items-center gap-2 px-3 py-2.5 rounded-[10px] border border-slate-200 bg-white focus-within:border-indigo-400">
               <Icon name="lock" stroke="#94A3B8" size={16} />
               <input type={showPass ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)}
-                placeholder="Min. 8 characters" className="flex-1 text-sm outline-none text-slate-800 placeholder:text-slate-400" />
+                placeholder="Min. 8 characters" className="flex-1 text-sm outline-none text-slate-800 placeholder:text-slate-400" required />
               <button type="button" onClick={() => setShowPass(!showPass)}>
                 <Icon name={showPass ? "eyeOff" : "eye"} stroke="#94A3B8" size={16} />
               </button>

@@ -1479,12 +1479,23 @@ export function Profile() {
 
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
-    memoryStore.updateStudentProfile({
+    const updates = {
       name: editName,
       targetGoal: editGoal,
       targetRole: editRole,
       preferredMode: editMode
-    });
+    };
+    memoryStore.updateStudentProfile(updates);
+    try {
+      apiClient.updateProfile({
+        name: editName,
+        targetGoal: editGoal,
+        targetRole: editRole,
+        preferredMode: editMode
+      });
+    } catch (err) {
+      console.warn("Update profile API call fallback:", err);
+    }
     setIsEditing(false);
     setStoreState(memoryStore.getState());
   };
@@ -1587,7 +1598,7 @@ export function Profile() {
       {tab === "account" && (
         <Card className="p-5 space-y-4">
           <SectionLabel>Account</SectionLabel>
-          {[{ label: "Email", value: "aarav@learnosdemo.ai" }, { label: "Password", value: "••••••••" }, { label: "Institution", value: "Sri Venkateswara College of Engineering" }].map(f => (
+          {[{ label: "Email", value: student.email || "student@voxlearn.ai" }, { label: "Password", value: "••••••••" }, { label: "Institution", value: "VoxLearn AI Academy" }].map(f => (
             <div key={f.label} className="flex items-center justify-between py-2.5 border-b border-slate-100 last:border-0">
               <div className="text-sm text-slate-500 font-medium">{f.label}</div>
               <div className="flex items-center gap-3"><span className="text-sm text-slate-900">{f.value}</span><button className="text-xs text-indigo-500 hover:text-indigo-700 font-medium">Edit</button></div>

@@ -87,7 +87,7 @@ def generate_remedial(data: RemedialRequestSchema, db: Session = Depends(get_db)
                     "Authorization": f"Bearer {api_key}"
                 },
                 json={
-                    "model": "llama-3.3-70b-versatile",
+                    "model": "openai/gpt-oss-120b",
                     "messages": [
                         {"role": "system", "content": "You are VoxLearn AI Remediation Engine. Output valid JSON object."},
                         {"role": "user", "content": prompt}

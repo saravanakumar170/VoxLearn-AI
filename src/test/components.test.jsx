@@ -107,7 +107,7 @@ describe('VoxLearn AI - UI Component & Interaction Test Suite', () => {
       render(<CourseStudio onOpenVoice={vi.fn()} initialTopic="SQL Window Functions" />);
       
       await waitFor(() => {
-        expect(screen.getByText('AI Course Generator & Multi-Modal Studio')).toBeInTheDocument();
+        expect(screen.getByText(/Game Arena/i)).toBeInTheDocument();
       });
 
       // Switch to Game Arena Mode

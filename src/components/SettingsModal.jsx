@@ -91,9 +91,9 @@ export default function SettingsModal({ isOpen, onClose }) {
                 value={config.groqModel}
                 onChange={(e) => setConfig({ ...config, groqModel: e.target.value })}
               >
-                <option value="llama-3.3-70b-versatile">Llama 3.3 70B Versatile (Fast & Smart)</option>
-                <option value="llama-3.1-8b-instant">Llama 3.1 8B Instant (Sub-100ms)</option>
-                <option value="mixtral-8x7b-32768">Mixtral 8x7B 32k</option>
+                <option value="openai/gpt-oss-120b">OpenAI GPT-OSS 120B (High Intelligence)</option>
+                <option value="qwen/qwen3.8-27b">Qwen 3.8 27B (Fast & Coding)</option>
+                <option value="openai/gpt-oss-20b">OpenAI GPT-OSS 20B (Sub-100ms)</option>
               </select>
             </div>
           </div>

@@ -143,6 +143,27 @@ class MemoryStore {
     };
   }
 
+  // Reset state for a newly registered student
+  resetForNewUser({ name, email, role = 'student', targetGoal = '' }) {
+    this.state.student = {
+      name: name || 'New Student',
+      email: email || 'student@voxlearn.ai',
+      role: role,
+      targetGoal: targetGoal || 'AI Engineer & Software Systems',
+      targetRole: role === 'student' ? 'AI Student' : 'Instructor',
+      level: 1,
+      xp: 0,
+      xpToNextLevel: 1000,
+      streakDays: 1,
+      preferredMode: 'Interactive Simulation, Dual-Host Podcast'
+    };
+    this.state.history = [
+      { date: new Date().toISOString().split('T')[0], action: 'Joined VoxLearn AI Ecosystem', score: '100%', flaggedConcept: 'Welcome Calibration', severity: 'Low' }
+    ];
+    this.state.activeRemedial = null;
+    this.saveState();
+  }
+
   // Update student profile details
   updateStudentProfile(updates) {
     this.state.student = {

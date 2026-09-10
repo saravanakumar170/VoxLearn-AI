@@ -1,4 +1,11 @@
 # VoxLearn AI — FastAPI Backend Application
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from root .env if present
+env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
+load_dotenv(dotenv_path=env_path)
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.database import init_db
