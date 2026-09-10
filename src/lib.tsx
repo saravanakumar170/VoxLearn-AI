@@ -312,4 +312,4 @@ export const COURSES = [
   },
 ] as const;
 
-export type CourseId = typeof COURSES[number]["id"];
+export type CourseId = typeof COURSES[number]["id"] | string;

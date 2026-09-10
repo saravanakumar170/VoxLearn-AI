@@ -5,6 +5,26 @@ import { GroqService } from './groqService';
 
 export const PRELOADED_COLLEGE_DOCS = [
   {
+    id: 'doc-dsa-1',
+    title: 'CS201: Data Structures & Algorithms — Arrays, Trees, Graphs & Dynamic Programming',
+    category: 'Placement Master Notes',
+    course: 'DSA for Placements (CS201)',
+    uploadDate: '2026-03-05',
+    content: `DSA FOR PLACEMENTS - HIGH PRIORITY TOPICS:
+1. Two Pointers & Sliding Window:
+   - Contiguous subarray optimization, Shrinking windows on target constraints (e.g. Longest Substring Without Repeating Characters).
+2. Binary Trees & BSTs:
+   - In-order traversal of BST yields sorted sequence.
+   - Lowest Common Ancestor (LCA) in O(H) time.
+3. Graphs:
+   - BFS for shortest path in unweighted graphs (Queue-based).
+   - DFS for topological sorting and cycle detection (3-color state: Unvisited, Visiting, Visited).
+   - Dijkstra's algorithm with Min-Heap Priority Queue for weighted graphs in O((V + E) log V).
+4. Dynamic Programming:
+   - 0/1 Knapsack: dp[i][w] = max(dp[i-1][w], val[i] + dp[i-1][w-wt[i]]).
+   - Longest Common Subsequence (LCS) and Edit Distance.`
+  },
+  {
     id: 'doc-os-1',
     title: 'CS302: Operating Systems — Concurrency, Deadlocks & Memory Management',
     category: 'Lecture Notes',
@@ -25,6 +45,37 @@ export const PRELOADED_COLLEGE_DOCS = [
 4. Memory Management: Paging vs Segmentation, Translation Lookaside Buffer (TLB) hit ratios, and Page Replacement Algorithms (LRU, FIFO, Optimal/Belady's Anomaly).`
   },
   {
+    id: 'doc-py-1',
+    title: 'CS208: Python for Data Science — NumPy, Pandas, Vectorization & ML Pipelines',
+    category: 'Lab Manual & Cheat Sheet',
+    course: 'Python for Data Science (CS208)',
+    uploadDate: '2026-02-28',
+    content: `PYTHON FOR DATA SCIENCE - CORE MODULES:
+1. NumPy Array Internals:
+   - Contiguous C memory buffers, SIMD vectorization, Broadcasting rules (dimensions match or are 1).
+   - Avoid Python for-loops on raw arrays; use np.vectorize or array operations.
+2. Pandas Data Wrangling:
+   - loc (label-based) vs iloc (0-indexed integer position).
+   - GroupBy split-apply-combine paradigm, handling missing values via imputation or forward-fill.
+3. Feature Engineering:
+   - StandardScaler (z-score normalization), OneHotEncoder for nominal categoricals.`
+  },
+  {
+    id: 'doc-sys-1',
+    title: 'CS405: System Design & Distributed Systems — Scalability, Caching & Consensus',
+    category: 'Architecture Case Studies',
+    course: 'System Design Fundamentals (CS405)',
+    uploadDate: '2026-02-20',
+    content: `SYSTEM DESIGN FUNDAMENTALS:
+1. Scalability: Horizontal scaling vs Vertical scaling, Stateless microservices behind Reverse Proxies (Nginx, Envoy).
+2. Data Partitioning & Sharding:
+   - Consistent Hashing (Virtual nodes on a hash ring) to minimize remapping during node additions/failures.
+3. Caching Strategies:
+   - Cache-Aside (Lazy loading), Write-Through, Write-Back.
+   - Eviction policies: LRU, LFU, TTL expiration.
+4. Distributed Consensus: CAP Theorem (Consistency, Availability, Partition tolerance), PACELC theorem, Raft & Paxos consensus protocols.`
+  },
+  {
     id: 'doc-dbms-1',
     title: 'CS304: Database Systems — ACID, Normalization & Query Execution',
     category: 'Textbook Extract',
@@ -41,20 +92,6 @@ export const PRELOADED_COLLEGE_DOCS = [
    - Shrinking Phase: Locks released, no new locks acquired.
    - Strict 2PL: All Exclusive locks held until transaction commits, avoiding cascading rollbacks.
 3. Normalization: 1NF (Atomic attributes), 2NF (No partial dependencies on candidate key), 3NF (No transitive dependencies), BCNF (Every determinant is a candidate key).`
-  },
-  {
-    id: 'doc-ml-1',
-    title: 'CS401: Machine Learning — Bias-Variance Tradeoff & Neural Architectures',
-    category: 'Previous Question Paper Solutions',
-    course: 'Machine Learning (CS401)',
-    uploadDate: '2026-01-20',
-    content: `PREVIOUS QUESTION PAPER SOLUTIONS (2025-2026) - CS401
-Q1: Explain Overfitting and Regularization Techniques with derivations.
-Ans: Overfitting occurs when a statistical model captures random noise along with the underlying data distribution, leading to low training error but high test error (High Variance).
-Mitigation strategies:
-- L1 Regularization (Lasso): Adds absolute penalty sum(|w|), drives weights to exact zero for feature selection.
-- L2 Regularization (Ridge): Adds squared penalty sum(w^2), shrinks weights smoothly without zeroing.
-- Dropout: Randomly deactivates neurons during forward pass with probability p to prevent co-adaptation.`
   }
 ];
 
@@ -102,11 +139,13 @@ class CollegeRAGService {
 
   // RAG Search & Context Retrieval
   searchContext(query, courseFilter = null) {
-    const terms = query.toLowerCase().split(/\s+/).filter(t => t.length > 2);
+    const terms = (query || '').toLowerCase().split(/\s+/).filter(t => t.length > 2);
     let candidateDocs = this.documents;
     
     if (courseFilter && courseFilter !== 'All') {
-      candidateDocs = candidateDocs.filter(d => d.course.includes(courseFilter) || d.title.includes(courseFilter));
+      const filterStr = courseFilter.toLowerCase();
+      const filtered = candidateDocs.filter(d => d.course.toLowerCase().includes(filterStr) || d.title.toLowerCase().includes(filterStr));
+      if (filtered.length > 0) candidateDocs = filtered;
     }
 
     const scored = candidateDocs.map(doc => {
@@ -122,6 +161,17 @@ class CollegeRAGService {
     return scored.filter(s => s.score > 0).slice(0, 3).map(s => s.doc);
   }
 
+  searchDocuments(query, courseFilter = null) {
+    const results = this.searchContext(query, courseFilter);
+    return results.map((d, idx) => ({
+      courseId: d.course,
+      sourceFile: d.title,
+      category: d.category,
+      pageNumber: idx + 1,
+      excerpt: d.content.slice(0, 150) + '...'
+    }));
+  }
+
   async answerQuestion(query, courseFilter = null) {
     const relevantDocs = this.searchContext(query, courseFilter);
     const contextText = relevantDocs.length > 0 
@@ -129,9 +179,9 @@ class CollegeRAGService {
       : 'No exact institution document matched, providing general domain academic knowledge.';
 
     const systemPrompt = `You are VoxLearn AI's College AI Tutor.
-Answer the student's question using the provided institution materials and curriculum notes.
+Answer the student's question directly, accurately, and thoroughly using the provided institution materials and curriculum notes.
 Cite the relevant document title when referencing facts.
-Provide a clear, accurate, high-scoring exam answer with key definitions, bullet points, and practical takeaways.
+Include key definitions, bullet points, and code/diagrams when appropriate.
 Context from student's college repository:
 ${contextText}`;
 
@@ -148,23 +198,10 @@ ${contextText}`;
       };
     }
 
-    // High quality contextual fallback
+    // Contextual fallback response
     if (query.toLowerCase().includes('deadlock')) {
       return {
-        answer: `### Deadlock in Operating Systems (CS302)
-
-A **Deadlock** is a state where two or more processes are permanently blocked because each is holding a resource and waiting for another resource acquired by another process.
-
-#### 4 Necessary Coffman Conditions:
-1. **Mutual Exclusion:** Resources cannot be shared simultaneously.
-2. **Hold and Wait:** A process holds $\\ge 1$ resource while requesting others.
-3. **No Preemption:** Resources can only be released voluntarily by the holding process.
-4. **Circular Wait:** A closed loop where $P_0 \\rightarrow P_1 \\rightarrow \\dots \\rightarrow P_n \\rightarrow P_0$.
-
-#### Primary Handling Strategies:
-- **Prevention:** Break at least one Coffman condition (e.g. strict global resource ordering).
-- **Avoidance:** **Banker's Algorithm** ensures the system never enters an *Unsafe State*.
-- **Detection & Recovery:** Construct a **Wait-For Graph (WFG)** to detect cycles; recover via process termination or preemption.`,
+        answer: `### Deadlock in Operating Systems (CS302)\n\nA **Deadlock** is a state where two or more processes are permanently blocked because each is holding a resource and waiting for another resource acquired by another process.\n\n#### 4 Necessary Coffman Conditions:\n1. **Mutual Exclusion:** Resources cannot be shared simultaneously.\n2. **Hold and Wait:** A process holds resources while requesting others.\n3. **No Preemption:** Resources can only be released voluntarily.\n4. **Circular Wait:** A closed loop of waiting processes.\n\n#### Primary Handling Strategies:\n- **Prevention:** Break at least one Coffman condition.\n- **Avoidance:** **Banker's Algorithm** ensures the system never enters an Unsafe State.\n- **Detection & Recovery:** Construct a Wait-For Graph (WFG) to detect cycles.`,
         sources: relevantDocs.length > 0 ? relevantDocs.map(d => ({ title: d.title, course: d.course, category: d.category })) : [
           { title: 'CS302: Operating Systems — Concurrency, Deadlocks & Memory Management', course: 'Operating Systems (CS302)', category: 'Lecture Notes' }
         ]
@@ -172,13 +209,12 @@ A **Deadlock** is a state where two or more processes are permanently blocked be
     }
 
     return {
-      answer: `Based on your course materials for **${courseFilter || 'your curriculum'}**:
-
-1. **Core Concept Definition:** This topic focuses on optimizing system invariants, concurrency guarantees, and resource efficiency.
-2. **Key Theoretical Insights:** Ensure you distinguish between syntactic execution and semantic state guarantees in exam answers.
-3. **Exam Tip:** Clearly state assumptions, provide time/space complexity, and illustrate with a quick state-transition diagram for full marks.`,
-      sources: relevantDocs.map(d => ({ title: d.title, course: d.course, category: d.category }))
+      answer: GroqService.getFallbackTutorResponse(query, courseFilter || "Computer Science Curriculum"),
+      sources: relevantDocs.length > 0 
+        ? relevantDocs.map(d => ({ title: d.title, course: d.course, category: d.category }))
+        : [{ title: 'College Engineering Curriculum Reference Notes', course: courseFilter || 'General CS', category: 'Lecture Notes' }]
     };
+
   }
 }
 

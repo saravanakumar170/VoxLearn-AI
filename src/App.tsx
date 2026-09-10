@@ -81,17 +81,32 @@ function StudentApp({ onLogout }: { onLogout: () => void }) {
     setScreen("course-player");
   };
 
-  const activeCourseData = COURSES.find(c => c.id === activeCourse)!;
+  const activeCourseData = COURSES.find(c => c.id === activeCourse) || {
+    id: activeCourse,
+    title: typeof activeCourse === 'string' ? activeCourse : "Applied Systems & Computer Science",
+    subject: "Computer Science",
+    modules: 5,
+    duration: "6 weeks",
+    progress: 0,
+    difficulty: "Intermediate",
+    diffColor: "sky" as const,
+    gradient: "from-indigo-500 to-violet-500",
+    tags: ["AI-Generated", "Adaptive"],
+    description: `AI-generated adaptive course for ${activeCourse}`,
+    active: true,
+    instructor: "AI-generated curriculum"
+  };
 
   const renderScreen = () => {
     switch (screen) {
-      case "dashboard": return <Dashboard onNav={setScreen} />;
+      case "dashboard": return <Dashboard onNav={setScreen} onSelectCourse={handleEnterCourse} />;
       case "tutor": return <AITutor />;
       case "courses": return <CourseCatalog onEnter={handleEnterCourse} onNav={setScreen} />;
       case "course-player": return <CoursePlayer course={activeCourseData} onBack={() => setScreen("courses")} onNav={setScreen} />;
       case "knowledge-graph": return <KnowledgeGraph onNav={setScreen} />;
       case "assessment": return <Assessment onNav={setScreen} />;
       case "assessment-results": return <AssessmentResults onNav={setScreen} />;
+
       case "gamification": return <Gamification />;
       case "goal-roadmap": return <GoalRoadmap onNav={setScreen} />;
       case "projects": return <Projects onNav={setScreen} />;

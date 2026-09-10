@@ -5,10 +5,9 @@ import { groqService } from "../services/groqService";
 import { ragService } from "../services/ragService";
 import { sharyxVoiceService } from "../services/sharyxVoiceService";
 import { memoryStore } from "../services/memoryStore";
-import { apiClient } from "../services/apiClient";
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
-export function Dashboard({ onNav }: { onNav: (s: StudentScreen) => void }) {
+export function Dashboard({ onNav, onSelectCourse }: { onNav: (s: StudentScreen) => void; onSelectCourse?: (id: CourseId) => void }) {
   const [storeState, setStoreState] = useState(() => memoryStore.getState());
 
   useEffect(() => {
@@ -76,7 +75,7 @@ export function Dashboard({ onNav }: { onNav: (s: StudentScreen) => void }) {
                 <Icon name="chevronRight" stroke="#94A3B8" size={14} /> SQL Subqueries · Module 4
               </p>
             </div>
-            <PrimaryBtn onClick={() => onNav("course-player")}>Resume →</PrimaryBtn>
+            <PrimaryBtn onClick={() => { if (onSelectCourse) onSelectCourse("dbms"); onNav("course-player"); }}>Resume →</PrimaryBtn>
           </div>
           <div className="mb-3">
             <div className="flex justify-between text-xs text-slate-500 mb-1.5"><span>Progress</span><span className="tabular font-medium text-slate-700">60%</span></div>
@@ -199,12 +198,12 @@ export function Dashboard({ onNav }: { onNav: (s: StudentScreen) => void }) {
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { title: "Correlated Subqueries", color: "from-indigo-500 to-violet-500", time: "25 min", hot: true },
-              { title: "Window Functions Deep Dive", color: "from-rose-400 to-pink-500", time: "40 min", hot: false },
-              { title: "ML Math Foundations", color: "from-sky-400 to-blue-500", time: "60 min", hot: false },
-              { title: "Python for Data Science", color: "from-emerald-400 to-teal-500", time: "45 min", hot: false },
+              { id: "dbms", title: "Correlated Subqueries", color: "from-indigo-500 to-violet-500", time: "25 min", hot: true },
+              { id: "dbms", title: "Window Functions Deep Dive", color: "from-rose-400 to-pink-500", time: "40 min", hot: false },
+              { id: "dsa", title: "DSA for Placements", color: "from-sky-400 to-blue-500", time: "60 min", hot: false },
+              { id: "python", title: "Python for Data Science", color: "from-emerald-400 to-teal-500", time: "45 min", hot: false },
             ].map((c, i) => (
-              <button key={i} onClick={() => onNav("course-player")} className="text-left rounded-[12px] overflow-hidden border border-slate-100 hover:shadow-md transition-shadow group">
+              <button key={i} onClick={() => { if (onSelectCourse) onSelectCourse(c.id as CourseId); onNav("course-player"); }} className="text-left rounded-[12px] overflow-hidden border border-slate-100 hover:shadow-md transition-shadow group">
                 <div className={`h-16 sm:h-20 bg-gradient-to-br ${c.color} relative`}>
                   {c.hot && <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/20 text-white flex items-center gap-1"><Icon name="flame" stroke="white" size={10} /> For you</span>}
                 </div>
@@ -253,9 +252,8 @@ export function AITutor() {
     setIsGenerating(true);
 
     try {
-      // Pull live RAG context
       const ragResults = ragService.searchDocuments(q, "CS304: Database Management Systems");
-      const citations = ragResults.map(r => `${r.courseId} ${r.sourceFile} (p.${r.pageNumber})`);
+      const citations = ragResults.map(r => `${r.sourceFile}`);
 
       const reply = await groqService.getSocraticTutorReply(q, socraticMode ? "DBMS & SQL (Socratic Guidance)" : "DBMS & SQL", newMsgList);
       
@@ -272,7 +270,7 @@ export function AITutor() {
     } catch (e) {
       setMessages(m => [...m, { 
         role: "ai", 
-        text: "Great question! In relational databases, subqueries execute sequentially or correlated with the outer query to filter records dynamically.", 
+        text: "In relational databases, subqueries execute sequentially or correlated with the outer query to filter records dynamically.", 
         time: "now", 
         sources: ["Lecture 7.pdf", "Textbook Ch.4"] 
       }]);
@@ -310,7 +308,7 @@ export function AITutor() {
 
   return (
     <div className="flex h-full overflow-hidden relative">
-      {/* Context panel — desktop left, mobile slide */}
+      {/* Context panel */}
       <div className={`${showContext ? "flex" : "hidden"} md:flex w-56 lg:w-64 border-r border-slate-200 bg-white flex-col flex-shrink-0`}>
         <div className="p-4 border-b border-slate-100">
           <div className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-2">Active Context</div>
@@ -331,21 +329,22 @@ export function AITutor() {
       {/* Main chat window */}
       <div className="flex-1 flex flex-col min-w-0 bg-white">
         {/* Chat header */}
-        <div className="h-14 px-4 border-b border-slate-200 flex items-center gap-3 flex-shrink-0">
-          <div className="w-8 h-8 rounded-[10px] flex items-center justify-center" style={{ background: "linear-gradient(135deg,#6366F1,#8B5CF6)" }}>
-            <Icon name="tutor" stroke="white" size={16} />
+        <div className="h-14 px-4 border-b border-slate-200 flex items-center justify-between flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-[10px] flex items-center justify-center" style={{ background: "linear-gradient(135deg,#6366F1,#8B5CF6)" }}>
+              <Icon name="tutor" stroke="white" size={16} />
+            </div>
+            <div>
+              <div className="text-sm font-bold text-slate-900 leading-none">College AI Tutor</div>
+              <div className="text-[11px] text-slate-400 mt-0.5 font-medium">RAG Active · Anna Univ CSE Sem IV</div>
+            </div>
           </div>
-          <div>
-            <div className="text-sm font-bold text-slate-900 leading-none">College AI Tutor</div>
-            <div className="text-[11px] text-slate-400 mt-0.5 font-medium">RAG Active · Anna Univ CSE Sem IV</div>
-          </div>
-          <span className="ml-auto text-xs text-indigo-600 font-medium">{socraticMode ? "Socratic" : ""}</span>
+          <span className="text-xs text-indigo-600 font-medium">{socraticMode ? "Socratic" : ""}</span>
         </div>
         
-        <div className="p-4">
-          <div className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-2">Socratic Mode</div>
+        <div className="p-4 border-b border-slate-100">
           <div className="flex items-center justify-between p-3 rounded-[10px] bg-slate-50 border border-slate-200">
-            <span className="text-xs font-medium text-slate-700">Guide via questions</span>
+            <span className="text-xs font-medium text-slate-700">Socratic Mode (Guide via questions)</span>
             <Toggle value={socraticMode} onChange={setSocraticMode} />
           </div>
         </div>
@@ -368,7 +367,7 @@ export function AITutor() {
                     <div className="mt-3 pt-3 border-t border-slate-100">
                       <div className="text-[10px] text-slate-400 mb-1.5 font-medium uppercase tracking-wide">Sources</div>
                       <div className="flex flex-wrap gap-1.5">
-                        {m.sources.map(s => <span key={s} onClick={() => sendMsg(`Tell me more about ${s}`)} className="px-2 py-0.5 rounded-full text-[11px] bg-slate-100 text-slate-600 font-medium cursor-pointer hover:bg-indigo-50 hover:text-indigo-600 transition-colors">{s}</span>)}
+                        {m.sources.map(s => <span key={s} className="px-2 py-0.5 rounded-full text-[11px] bg-slate-100 text-slate-600 font-medium">{s}</span>)}
                       </div>
                     </div>
                   )}
@@ -383,7 +382,7 @@ export function AITutor() {
                 <div className="text-[10px] text-slate-400 mt-1 px-1">{m.time}</div>
               </div>
               {m.role === "user" && (
-                <div className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-white text-[10px] font-semibold mt-1" style={{ background: "linear-gradient(135deg,#6366F1,#8B5CF6)" }}>AS</div>
+                <div className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-white text-[10px] font-semibold mt-1" style={{ background: "linear-gradient(135deg,#6366F1,#8B5CF6)" }}>ME</div>
               )}
             </div>
           ))}
@@ -409,7 +408,6 @@ export function AITutor() {
               </button>
             </div>
           </div>
-          {socraticMode && <p className="text-[11px] text-indigo-500 mt-1.5 text-center">Socratic mode — I'll guide you with questions.</p>}
         </div>
       </div>
 
@@ -440,6 +438,9 @@ export function AITutor() {
 export function CourseCatalog({ onEnter, onNav }: { onEnter: (id: CourseId) => void; onNav?: (s: StudentScreen) => void }) {
   const [filter, setFilter] = useState<"all" | "active" | "new">("all");
   const [search, setSearch] = useState("");
+  const [showGenModal, setShowGenModal] = useState(false);
+  const [courseTopic, setCourseTopic] = useState("");
+  const [courseLevel, setCourseLevel] = useState("Intermediate");
   const [isGenerating, setIsGenerating] = useState(false);
 
   const filtered = COURSES.filter(c => {
@@ -452,13 +453,17 @@ export function CourseCatalog({ onEnter, onNav }: { onEnter: (id: CourseId) => v
   const active = filtered.filter(c => c.progress > 0);
   const newCourses = filtered.filter(c => c.progress === 0);
 
-  const handleGenerateCourse = async () => {
+  const handleGenerateCourse = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const topic = courseTopic.trim() || "Advanced Deep Learning & Neural Networks";
     setIsGenerating(true);
     try {
-      await groqService.generateCourse("Advanced Deep Learning & Neural Networks", "Advanced");
-      onEnter("ml");
-    } catch (e) {
-      onEnter("dbms");
+      await groqService.generateCourse(topic, courseLevel);
+      setShowGenModal(false);
+      onEnter(topic);
+    } catch (err) {
+      setShowGenModal(false);
+      onEnter(topic);
     } finally {
       setIsGenerating(false);
     }
@@ -471,7 +476,7 @@ export function CourseCatalog({ onEnter, onNav }: { onEnter: (id: CourseId) => v
           <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">My Courses</h1>
           <p className="text-slate-500 text-sm mt-1">Click any course to start learning.</p>
         </div>
-        <PrimaryBtn onClick={handleGenerateCourse} disabled={isGenerating}>
+        <PrimaryBtn onClick={() => setShowGenModal(true)} disabled={isGenerating}>
           {isGenerating ? "⚡ Generating with AI…" : "+ Generate New Course"}
         </PrimaryBtn>
       </div>
@@ -558,11 +563,50 @@ export function CourseCatalog({ onEnter, onNav }: { onEnter: (id: CourseId) => v
         </div>
       )}
 
-      {filtered.length === 0 && (
-        <div className="text-center py-16 text-slate-400">
-          <div className="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center mx-auto mb-3"><Icon name="book" stroke="#4F46E5" size={24} /></div>
-          <div className="text-sm font-medium">No courses match</div>
-          <div className="text-xs mt-1">Try a different filter or generate a new course</div>
+      {/* Generate Course Modal */}
+      {showGenModal && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4 fade-in">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold text-slate-900">Create Custom AI Course</h3>
+              <button onClick={() => setShowGenModal(false)} className="p-1 rounded-lg hover:bg-slate-100"><Icon name="x" size={18} /></button>
+            </div>
+            <p className="text-xs text-slate-500">
+              Enter any domain or topic. Groq AI generates complete lessons, podcasts, game arena challenges, and code sandboxes.
+            </p>
+            <form onSubmit={handleGenerateCourse} className="space-y-4">
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">Course Title</label>
+                <input 
+                  value={courseTopic} 
+                  onChange={e => setCourseTopic(e.target.value)} 
+                  placeholder="e.g. Distributed Systems, Quantum ML, React Native..."
+                  className="w-full text-sm p-3 rounded-[10px] border border-slate-200 bg-slate-50 text-slate-800 outline-none" 
+                  autoFocus
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">Level</label>
+                <select 
+                  value={courseLevel} 
+                  onChange={e => setCourseLevel(e.target.value)}
+                  className="w-full text-sm p-2.5 rounded-[10px] border border-slate-200 bg-slate-50 text-slate-800 outline-none"
+                >
+                  <option value="Beginner">Beginner</option>
+                  <option value="Intermediate">Intermediate</option>
+                  <option value="Advanced">Advanced</option>
+                </select>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <SecondaryBtn onClick={() => setShowGenModal(false)} className="flex-1">Cancel</SecondaryBtn>
+                <PrimaryBtn type="submit" disabled={isGenerating} className="flex-1">
+                  {isGenerating ? "Generating…" : "Generate Course"}
+                </PrimaryBtn>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>
@@ -577,7 +621,31 @@ export function CoursePlayer({ course, onBack, onNav }: { course: typeof COURSES
   const [sandboxCode, setSandboxCode] = useState("SELECT name, salary FROM employees WHERE salary > (SELECT AVG(salary) FROM employees);");
   const [sandboxResult, setSandboxResult] = useState<string | null>(null);
 
-  const modules = [
+  const isDsa = course?.id === "dsa";
+  const isPython = course?.id === "python";
+  const isOs = course?.id === "os";
+  const isSystemDesign = course?.id === "system-design";
+
+  const courseTitle = course?.title || "Database Management Systems";
+  const conceptName = isDsa ? "Arrays & Two Pointers" : isPython ? "NumPy Vectorization" : isOs ? "Process Scheduling" : isSystemDesign ? "Scalability & Load Balancing" : "SQL Subqueries";
+
+  const modules = isDsa ? [
+    { label: "1. Arrays & Two Pointers", current: true },
+    { label: "2. Binary Trees & BST", done: false },
+    { label: "3. Graph BFS/DFS", done: false },
+    { label: "4. Dynamic Programming", done: false },
+    { label: "5. Heaps & Tries", done: false },
+  ] : isPython ? [
+    { label: "1. Python Internals", done: true },
+    { label: "2. NumPy Arrays", current: true },
+    { label: "3. Pandas DataFrames", done: false },
+    { label: "4. Visualization", done: false },
+  ] : isOs ? [
+    { label: "1. Processes & Threads", done: true },
+    { label: "2. CPU Scheduling", current: true },
+    { label: "3. Concurrency & Deadlocks", done: false },
+    { label: "4. Virtual Memory", done: false },
+  ] : [
     { label: "1. SQL Basics", done: true },
     { label: "2. JOINs", done: true },
     { label: "3. Aggregations", done: true },
@@ -591,12 +659,12 @@ export function CoursePlayer({ course, onBack, onNav }: { course: typeof COURSES
 
   return (
     <div className="flex h-full overflow-hidden">
-      {/* Left outline — hidden on mobile unless toggled */}
+      {/* Left outline */}
       <div className={`${showOutline ? "flex" : "hidden"} md:flex w-56 lg:w-64 bg-white border-r border-slate-200 flex-col flex-shrink-0 overflow-y-auto`}>
         <div className="p-4 border-b border-slate-100">
-          <div className="text-xs font-semibold text-slate-800 truncate">{course.title}</div>
-          <div className="text-[11px] text-slate-400 mt-0.5">Module progress · {course.progress}%</div>
-          <ProgressBar value={course.progress} className="mt-2" height={4} />
+          <div className="text-xs font-semibold text-slate-800 truncate">{courseTitle}</div>
+          <div className="text-[11px] text-slate-400 mt-0.5">Module progress · {course?.progress || 60}%</div>
+          <ProgressBar value={course?.progress || 60} className="mt-2" height={4} />
         </div>
         <div className="p-3 space-y-1">
           {modules.map(m => (
@@ -620,7 +688,6 @@ export function CoursePlayer({ course, onBack, onNav }: { course: typeof COURSES
             </button>
             <button onClick={onBack} className="text-indigo-500 hover:text-indigo-700 font-medium whitespace-nowrap">Courses</button>
             <Icon name="chevronRight" stroke="#94A3B8" size={12} />
-            <span className="truncate max-w-[120px]">{course.title}</span>
             <Icon name="chevronRight" stroke="#94A3B8" size={12} />
             <span className="text-indigo-600 font-medium whitespace-nowrap">Subqueries</span>
           </div>
@@ -631,7 +698,7 @@ export function CoursePlayer({ course, onBack, onNav }: { course: typeof COURSES
         <div className="flex-1 overflow-y-auto">
           <div className="max-w-2xl mx-auto p-4 sm:p-6 space-y-5">
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">SQL Subqueries</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">{conceptName}</h1>
               <p className="text-slate-500 text-sm mt-1">Module 4 · Lesson 3 of 3 · Est. 20 min</p>
               <ProgressBar value={60} className="mt-3" height={5} />
             </div>
@@ -690,7 +757,7 @@ WHERE salary > (
         </div>
       </div>
 
-      {/* AI Rail — desktop only */}
+      {/* AI Rail */}
       <div className="hidden lg:flex w-56 bg-white border-l border-slate-200 flex-col flex-shrink-0">
         <div className="p-4 border-b border-slate-100">
           <SectionLabel>AI Helper</SectionLabel>
@@ -1410,9 +1477,9 @@ export function Profile() {
 
   const tabs = ["profile", "memory", "notifications", "account", "privacy"] as const;
 
-  const handleSaveProfile = async (e: React.FormEvent) => {
+  const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
-    await apiClient.updateProfile({
+    memoryStore.updateStudentProfile({
       name: editName,
       targetGoal: editGoal,
       targetRole: editRole,
@@ -1462,14 +1529,6 @@ export function Profile() {
             <div>
               <label className="text-xs font-semibold text-slate-700 block mb-1">Primary Learning Goal</label>
               <input value={editGoal} onChange={e => setEditGoal(e.target.value)} className="w-full text-sm p-2.5 rounded-[8px] border border-slate-200 bg-white text-slate-900 outline-none focus:border-indigo-400" />
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-slate-700 block mb-1">Target Career Role</label>
-              <input value={editRole} onChange={e => setEditRole(e.target.value)} className="w-full text-sm p-2.5 rounded-[8px] border border-slate-200 bg-white text-slate-900 outline-none focus:border-indigo-400" />
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-slate-700 block mb-1">Preferred Learning Style</label>
-              <input value={editMode} onChange={e => setEditMode(e.target.value)} className="w-full text-sm p-2.5 rounded-[8px] border border-slate-200 bg-white text-slate-900 outline-none focus:border-indigo-400" />
             </div>
             <div className="flex gap-3 pt-2">
               <SecondaryBtn onClick={() => setIsEditing(false)}>Cancel</SecondaryBtn>
@@ -1603,44 +1662,7 @@ export function DesignSystem() {
           <div><div className="text-[11px] text-slate-400 mono mb-1">H1 · 24px · 700</div><div className="text-2xl font-bold text-slate-900 tracking-tight">Good morning, Aarav</div></div>
           <div><div className="text-[11px] text-slate-400 mono mb-1">H2 · 18px · 600</div><div className="text-lg font-semibold text-slate-800">Database Management Systems</div></div>
           <div><div className="text-[11px] text-slate-400 mono mb-1">Body · 14px · 400</div><div className="text-sm text-slate-700 leading-relaxed">A subquery is a query nested inside another SQL query. They allow complex filtering with elegance.</div></div>
-          <div><div className="text-[11px] text-slate-400 mono mb-1">Label · 11px · uppercase</div><div className="text-[11px] font-semibold uppercase tracking-widest text-slate-400">Active Context · DBMS · SQL</div></div>
-          <div><div className="text-[11px] text-slate-400 mono mb-1">Numeric · 28px · tabular</div><div className="text-3xl font-bold tabular" style={{ color: "#6366F1" }}>2,480 XP</div></div>
-          <div><div className="text-[11px] text-slate-400 mono mb-1">Mono · JetBrains Mono</div><div className="mono text-sm text-emerald-400 bg-slate-900 rounded-[8px] px-4 py-2 inline-block">SELECT * FROM employees WHERE salary &gt; 80000;</div></div>
         </Card>
-      </section>
-
-      <section>
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-5">Components</h2>
-        <div className="space-y-5">
-          <Card className="p-5">
-            <SectionLabel>Buttons</SectionLabel>
-            <div className="flex flex-wrap gap-3 items-center">
-              <PrimaryBtn>Primary Action</PrimaryBtn>
-              <SecondaryBtn>Secondary</SecondaryBtn>
-              <GhostBtn>Ghost</GhostBtn>
-              <button className="px-4 py-2 rounded-[10px] text-sm font-medium text-rose-600 bg-rose-50 border border-rose-200">Danger</button>
-            </div>
-          </Card>
-          <Card className="p-5">
-            <SectionLabel>Badges & Pills</SectionLabel>
-            <div className="flex flex-wrap gap-2">
-              <Badge label="Mastered" color="emerald" /><Badge label="Developing" color="sky" /><Badge label="Weak" color="amber" /><Badge label="At-risk" color="rose" /><Badge label="Level 7" color="indigo" /><Badge label="Inactive" color="slate" />
-            </div>
-          </Card>
-          <Card className="p-5">
-            <SectionLabel>Progress</SectionLabel>
-            <div className="space-y-3">
-              <div className="flex items-center gap-4">
-                <ProgressRing value={92} size={60} stroke={6} color="#10B981" label="92%" />
-                <ProgressRing value={54} size={60} stroke={6} color="#F59E0B" label="54%" />
-                <ProgressRing value={38} size={60} stroke={6} color="#F43F5E" label="38%" />
-              </div>
-              <ProgressBar value={92} color="#10B981" />
-              <ProgressBar value={54} color="#F59E0B" />
-              <ProgressBar value={38} color="#F43F5E" />
-            </div>
-          </Card>
-        </div>
       </section>
     </div>
   );
